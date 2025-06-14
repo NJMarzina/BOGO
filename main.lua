@@ -6,12 +6,25 @@ require("pongBackground")
 
 function love.load()    --triggers when game started , data and assets
 
+    --GAME SETUP
+
+    love.window.setTitle("BOGO") -- Initial game window
+    love.window.setMode(1080, 720) -- Set the initial window size
+
+    --call like dashboard to start or whatever
+
+    -- Creates new window for PONG{
+    -------- this would probably be better as a separate file, and should also be in update.. move after dashboard created ------
+    ------also should be like making new windows, rather it should display on top of same window ------
+    love.window.setTitle("Pong Game") -- Set the window title
+    love.window.setMode(1080, 720) -- Set the window size
+
     --pong game
     pongLoad() -- Load the pong game assets and modules
 
     Score = { player = 0, opponent = 0 } -- Initialize the score table
     font = love.graphics.newFont(30) -- Create a new font with size 30
-    --end pong game
+    --end pong game}
 end
 
 function love.update(dt) -- program actual game logic. handled/triggered 1 time per frame...
