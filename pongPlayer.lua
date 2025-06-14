@@ -15,9 +15,9 @@ function PongPlayer:update(dt)
 end
 
 function PongPlayer:move(dt)
-    if love.keyboard.isDown("w") then   -- add or up arrow
+    if love.keyboard.isDown("w") or love.keyboard.isDown("up") then   -- add or up arrow
         self.y = self.y - self.speed * dt
-    elseif love.keyboard.isDown("s") then -- add or down arrow
+    elseif love.keyboard.isDown("s") or love.keyboard.isDown("down") then -- add or down arrow
         self.y = self.y + self.speed * dt
     end
 end

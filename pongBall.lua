@@ -9,7 +9,7 @@ function PongBall:load()
     self.img = love.graphics.newImage("assets/images/ball1.png") -- Load the ball image
     self.width = self.img:getWidth() -- 20
     self.height = self.img:getHeight() -- 20
-    self.speed = 200
+    self.speed = 400
     self.xVel = -self.speed
     self.yVel = 0
 end

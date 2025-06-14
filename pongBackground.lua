@@ -9,6 +9,9 @@ function PongBackground:load()
     self.width = self.planets:getWidth()
     self.height = self.planets:getHeight()
 
+    --self.width = 540
+    --self.height = 360
+
     self.rotation = 0
 end
 
