@@ -1,5 +1,3 @@
-
-
 PongBackground = {}
 
 function PongBackground:load()

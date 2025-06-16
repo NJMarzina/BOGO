@@ -1,7 +1,7 @@
 state = 'launcher'  -- Initial state of the game
 
 local launcher = {}        -- temporary stub
-local pongGame = require('pongGame')
+local pongGame = require('pong.pongGame')
 
 --local state = 'launcher'
 

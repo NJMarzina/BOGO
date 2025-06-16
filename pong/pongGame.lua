@@ -1,9 +1,9 @@
 local PongGame = {}
 
-require('pongPlayer')
-require('pongBall')
-require('pongOpponent')
-require('pongBackground')
+require('pong.pongPlayer')
+require('pong.pongBall')
+require('pong.pongOpponent')
+require('pong.pongBackground')
 
 function PongGame:load()
     love.window.setTitle('Pong')
