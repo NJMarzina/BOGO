@@ -81,7 +81,7 @@ function PongBall:score()
 
         if Score.opponent >= 3 then
             effects.flash(0.1)
-            lose1.play() -- Play sound effect for losing
+            lose1:play() -- Play sound effect for losing
             returnToLauncher() -- Quit the game if opponent reaches 3 points
             return
         end
