@@ -74,6 +74,11 @@ function PongBall:score()
         Score.opponent = Score.opponent + 1 -- Increment opponent's score
 
         gameboy_pluck1:play() -- Play sound effect for scoring
+
+        if Score.opponent >= 3 then
+            returnToLauncher() -- Quit the game if opponent reaches 3 points
+            return
+        end
     end
     
     if self.x + self.width > love.graphics.getWidth() then  -- if ball gets to right side of screen
@@ -81,6 +86,11 @@ function PongBall:score()
         Score.player = Score.player + 1 -- Increment player's score
 
         gameboy_pluck1:play() -- Play sound effect for scoring
+
+        if Score.player >= 3 then
+            returnToLauncher() -- Quit the game if player reaches 3 points
+            return
+        end
     end
 end
 

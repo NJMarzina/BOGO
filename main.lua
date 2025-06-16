@@ -1,70 +1,55 @@
---pong requirements
-require("pongPlayer")
-require("pongBall")
-require("pongOpponent")
-require("pongBackground")
+state = 'launcher'  -- Initial state of the game
 
-function love.load()    --triggers when game started , data and assets
+local launcher = {}        -- temporary stub
+local pongGame = require('pongGame')
 
-    --GAME SETUP
+--local state = 'launcher'
 
-    love.window.setTitle("BOGO") -- Initial game window
-    love.window.setMode(1080, 720) -- Set the initial window size
-
-    --call like dashboard to start or whatever
-
-    -- Creates new window for PONG{
-    -------- this would probably be better as a separate file, and should also be in update.. move after dashboard created ------
-    ------also should be like making new windows, rather it should display on top of same window ------
-    love.window.setTitle("Pong Game") -- Set the window title
-    love.window.setMode(1080, 720) -- Set the window size
-
-    --pong game
-    pongLoad() -- Load the pong game assets and modules
-
-    Score = { player = 0, opponent = 0 } -- Initialize the score table
-    font = love.graphics.newFont(30) -- Create a new font with size 30
-    --end pong game}
+function launcher.load()
+    love.window.setTitle('BOGO')
+    launcher.font = launcher.font or love.graphics.newFont(18)
+end
+function launcher.update(dt) end
+function launcher.draw()
+    love.graphics.setFont(launcher.font)
+    love.graphics.printf('Press P to play Pong\nPress F to flip a Coin', 0, love.graphics.getHeight()/2,
+                        love.graphics.getWidth(), 'center')
 end
 
-function love.update(dt) -- program actual game logic. handled/triggered 1 time per frame...
-
-    --pong game
-    pongUpdate(dt)
-    --end pong game
+function love.load()
+    launcher.load()
 end
 
-function love.draw() -- used to display graphics
-
-    --pong game
-    pongDraw() -- Draw the pong game elements
-    --end pong game
+function love.update(dt)
+    if state == 'launcher' then
+        launcher.update(dt)
+    elseif state == 'pong' then
+        pongGame:update(dt)
+    end
 end
 
-function pongLoad()
-    PongPlayer:load() -- Load the player paddle
-    PongBall:load()   -- Load the ball
-    PongOpponent:load() -- Load the opponent paddle
-    PongBackground:load() -- Load the background
+function love.draw()
+    if state == 'launcher' then
+        launcher.draw()
+    elseif state == 'pong' then
+        pongGame:draw()
+    end
 end
 
-function pongUpdate(dt)
-    PongPlayer:update(dt)
-    PongBall:update(dt) -- Update the PongBall module
-    PongOpponent:update(dt) -- Update the PongOpponent module
-    PongBackground:update(dt) -- Update the PongBackground module
+--helper that any module can call
+function _G.returnToLauncher()
+    state = 'launcher'
+    launcher.load()                 -- reset the launcher screen (optional)
+    -- reset anything else you want here (scores, paddles etc.)
 end
 
-function pongDraw()
-    PongBackground:draw() -- Draw the background first
-    PongPlayer:draw()
-    PongBall:draw()
-    PongOpponent:draw()
-    drawPongScore() -- Draw the score on top of everything else
-end
-
-function drawPongScore()
-    love.graphics.setFont(font) -- Set the font for score display
-    love.graphics.print("Player Score: " .. Score.player, 50, 50)
-    love.graphics.print("Opponent Score: " .. Score.opponent, love.graphics.getWidth() - 450, 50)
+function love.keypressed(key)
+    if state == 'launcher' and key == 'p' then
+        state = 'pong'
+        pongGame:load()
+    elseif key == 'escape' then
+        love.event.quit()
+    elseif state == 'pong' and key == 'q' then
+        returnToLauncher()  -- Quit the game and return to launcher
+    end
 end
