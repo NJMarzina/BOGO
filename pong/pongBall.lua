@@ -1,7 +1,11 @@
+local effects = require('misc.effects')  -- effects module for flashing
+
 PongBall = {}
 
 sonic_sound_1 = love.audio.newSource("assets/sounds/sonar_ping1.mp3", "static") -- Load the sound effect
 gameboy_pluck1 = love.audio.newSource("assets/sounds/gameboy_pluck1.mp3", "static") -- Load the sound effect
+win1 = love.audio.newSource("assets/sounds/win1.mp3", "static") -- Load the sound effect
+lose1 = love.audio.newSource("assets/sounds/jump1.mp3", "static") -- Load the sound effect
 
 function PongBall:load()
     self.x = love.graphics.getWidth() / 2
@@ -76,6 +80,8 @@ function PongBall:score()
         gameboy_pluck1:play() -- Play sound effect for scoring
 
         if Score.opponent >= 3 then
+            effects.flash(0.1)
+            lose1.play() -- Play sound effect for losing
             returnToLauncher() -- Quit the game if opponent reaches 3 points
             return
         end
@@ -88,6 +94,8 @@ function PongBall:score()
         gameboy_pluck1:play() -- Play sound effect for scoring
 
         if Score.player >= 3 then
+            effects.flash(0.1)
+            win1:play() -- Play sound effect for winning
             returnToLauncher() -- Quit the game if player reaches 3 points
             return
         end

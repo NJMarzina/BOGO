@@ -1,7 +1,9 @@
 state = 'launcher'  -- Initial state of the game
 
 local launcher = {}        -- temporary stub
+local effects = require('misc.effects')  -- effects module for flashing
 local pongGame = require('pong.pongGame')
+local coinflipGame = require('coinflip.coinflipGame')
 
 --local state = 'launcher'
 
@@ -25,6 +27,9 @@ function love.update(dt)
         launcher.update(dt)
     elseif state == 'pong' then
         pongGame:update(dt)
+    elseif state == 'coinflip' then
+        coinflipGame:update(dt)
+    effects.update(dt) -- flash effect
     end
 end
 
@@ -33,14 +38,10 @@ function love.draw()
         launcher.draw()
     elseif state == 'pong' then
         pongGame:draw()
+    elseif state == 'coinflip' then
+        coinflipGame:draw()
+    effects.draw() -- draw flash effect
     end
-end
-
---helper that any module can call
-function _G.returnToLauncher()
-    state = 'launcher'
-    launcher.load()                 -- reset the launcher screen (optional)
-    -- reset anything else you want here (scores, paddles etc.)
 end
 
 function love.keypressed(key)
@@ -49,7 +50,17 @@ function love.keypressed(key)
         pongGame:load()
     elseif key == 'escape' then
         love.event.quit()
-    elseif state == 'pong' and key == 'q' then
-        returnToLauncher()  -- Quit the game and return to launcher
+    elseif key == 'f' then
+        state = 'coinflip'
+        coinflipGame:load()
+    elseif key == 'q' then
+        returnToLauncher()
     end
+end
+
+--helper that any module can call
+function _G.returnToLauncher()
+    state = 'launcher'
+    launcher.load()                 -- reset the launcher screen (optional)
+    -- reset anything else you want here (scores, paddles etc.)
 end

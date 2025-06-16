@@ -7,7 +7,7 @@ require('pong.pongBackground')
 
 function PongGame:load()
     love.window.setTitle('Pong')
-    love.window.setMode(1080, 720)
+    --love.window.setMode(1080, 720)
 
     PongPlayer:load()
     PongBall:load()
