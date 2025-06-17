@@ -48,13 +48,16 @@ function love.keypressed(key)
     if state == 'launcher' and key == 'p' then
         state = 'pong'
         pongGame:load()
-    elseif key == 'escape' then
-        love.event.quit()
-    elseif key == 'f' then
-        state = 'coinflip'
-        coinflipGame:load()
     elseif key == 'q' then
         returnToLauncher()
+    elseif state == 'launcher' and key == 'f' then
+        state = 'coinflip'
+        coinflipGame:load()
+    elseif state == 'coinflip' and key == 'f' then
+        -- Reset the coin flip game
+        coinflipGame:load()
+    elseif key == 'escape' then
+        love.event.quit()
     end
 end
 

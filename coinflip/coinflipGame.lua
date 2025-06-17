@@ -2,7 +2,7 @@ local effects = require('misc.effects')  -- effects module for flashing
 local CoinflipGame = {}
 
 local resultText = ""
-local font
+--local font
 
 function CoinflipGame:load()
     love.window.setTitle("Coin Flip")

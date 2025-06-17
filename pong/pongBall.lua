@@ -118,3 +118,5 @@ function PongBall:draw()
     --love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
     love.graphics.draw(self.img, self.x, self.y)
 end
+
+-- all scoring and shit should be within a pongScore file, but for now it's here
