@@ -10,11 +10,21 @@ local coinflipGame = require('coinflip.coinflipGame')
 function launcher.load()
     love.window.setTitle('BOGO')
     launcher.font = launcher.font or love.graphics.newFont(18)
+    keyboard = love.graphics.newImage("assets/images/keyboard.png")
+    background = love.graphics.newImage("assets/images/minecraft_lush1.jpg")
+    turtle = love.graphics.newImage("assets/images/turtle1.png")
+    rotation = 0
 end
-function launcher.update(dt) end
+function launcher.update(dt)
+    rotation = rotation + 1 * dt
+end
+
 function launcher.draw()
+    love.graphics.draw(background, 0, 0, 0, love.graphics.getWidth() / background:getWidth(), love.graphics.getHeight() / background:getHeight())
+    love.graphics.draw(turtle, love.graphics.getWidth()/4, love.graphics.getHeight()/4, rotation)
+    love.graphics.draw(keyboard, 0, 0, 0, love.graphics.getWidth() / keyboard:getWidth(), love.graphics.getHeight() / keyboard:getHeight())
     love.graphics.setFont(launcher.font)
-    love.graphics.printf('Press P to play Pong\nPress F to flip a Coin', 0, love.graphics.getHeight()/2,
+    love.graphics.printf('Press P to play Pong\nPress F to flip a Coin', 0, love.graphics.getHeight()/2 + 200,
                         love.graphics.getWidth(), 'center')
 end
 
