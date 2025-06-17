@@ -5,6 +5,9 @@ local effects = require('misc.effects')  -- effects module for flashing
 local pongGame = require('pong.pongGame')
 local coinflipGame = require('coinflip.coinflipGame')
 
+local x, y, rotation, turtle, background, keyboard
+local speed = 120
+
 --local state = 'launcher'
 
 function launcher.load()
@@ -14,14 +17,21 @@ function launcher.load()
     background = love.graphics.newImage("assets/images/minecraft_lush1.jpg")
     turtle = love.graphics.newImage("assets/images/turtle1.png")
     rotation = 0
+    x = -turtle:getWidth()
+    y = 50
 end
+
 function launcher.update(dt)
     rotation = rotation + 1 * dt
+    x = x + speed * dt
+    if x > love.graphics.getWidth() then
+        x = -turtle:getWidth()
+    end
 end
 
 function launcher.draw()
     love.graphics.draw(background, 0, 0, 0, love.graphics.getWidth() / background:getWidth(), love.graphics.getHeight() / background:getHeight())
-    love.graphics.draw(turtle, love.graphics.getWidth()/4, love.graphics.getHeight()/4, rotation)
+    love.graphics.draw(turtle, x, y, 0) -- 0 is rotation
     love.graphics.draw(keyboard, 0, 0, 0, love.graphics.getWidth() / keyboard:getWidth(), love.graphics.getHeight() / keyboard:getHeight())
     love.graphics.setFont(launcher.font)
     love.graphics.printf('Press P to play Pong\nPress F to flip a Coin', 0, love.graphics.getHeight()/2 + 200,
