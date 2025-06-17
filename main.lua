@@ -36,6 +36,10 @@ function launcher.draw()
     love.graphics.setFont(launcher.font)
     love.graphics.printf('Press P to play Pong\nPress F to flip a Coin', 0, love.graphics.getHeight()/2 + 200,
                         love.graphics.getWidth(), 'center')
+    love.graphics.setColor(0,0,0) -- set color to black for text below
+    love.graphics.printf('P', 280, 322, love.graphics.getWidth(), 'center')
+    love.graphics.printf('F', -110, 370, love.graphics.getWidth(), 'center')
+    love.graphics.setColor(1,1,1) -- reset color to white // without this the whole page renders black
 end
 
 function love.load()
