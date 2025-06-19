@@ -5,15 +5,22 @@ local effects = require('misc.effects')  -- effects module for flashing
 local pongGame = require('pong.pongGame')
 local coinflipGame = require('coinflip.coinflipGame')
 
+local draws = require('utils.draws')  -- utility functions for drawing
+local sort = require('utils.sorts')  -- sorting algorithms module
+
 local x, y, rotation, turtle, background, keyboard
 local speed = 120
+
+local main_loop = love.audio.newSource("assets/sounds/main_loop.wav", "static") -- Load the main loop sound
+main_loop:setLooping(true) -- Set the sound to loop
 
 --local state = 'launcher'
 
 function launcher.load()
     love.window.setTitle('BOGO')
+    love.window.setMode(1080, 720, {resizable = false, vsync = true})
+    main_loop:play() -- Play the main loop sound
     launcher.font = launcher.font or love.graphics.newFont(18)
-    keyboard = love.graphics.newImage("assets/images/keyboard.png")
     background = love.graphics.newImage("assets/images/minecraft_lush1.jpg")
     turtle = love.graphics.newImage("assets/images/turtle1.png")
     rotation = 0
@@ -27,19 +34,17 @@ function launcher.update(dt)
     if x > love.graphics.getWidth() then
         x = -turtle:getWidth()
     end
+
+    launcher.font = love.graphics.newFont(18) -- Ensure the font is set
 end
 
 function launcher.draw()
     love.graphics.draw(background, 0, 0, 0, love.graphics.getWidth() / background:getWidth(), love.graphics.getHeight() / background:getHeight())
     love.graphics.draw(turtle, x, y, 0) -- 0 is rotation
-    love.graphics.draw(keyboard, 0, 0, 0, love.graphics.getWidth() / keyboard:getWidth(), love.graphics.getHeight() / keyboard:getHeight())
-    love.graphics.setFont(launcher.font)
-    love.graphics.printf('Press P to play Pong\nPress F to flip a Coin', 0, love.graphics.getHeight()/2 + 200,
+    draws:drawKeyboard()
+    love.graphics.setColor(1,1,1) -- reset color to white
+    love.graphics.printf('Press P to play Pong\nPress F to flip a Coin\nPress S to sort', 0, love.graphics.getHeight()/2 + 200,
                         love.graphics.getWidth(), 'center')
-    love.graphics.setColor(0,0,0) -- set color to black for text below
-    love.graphics.printf('P', 280, 322, love.graphics.getWidth(), 'center')
-    love.graphics.printf('F', -110, 370, love.graphics.getWidth(), 'center')
-    love.graphics.setColor(1,1,1) -- reset color to white // without this the whole page renders black
 end
 
 function love.load()
@@ -53,6 +58,7 @@ function love.update(dt)
         pongGame:update(dt)
     elseif state == 'coinflip' then
         coinflipGame:update(dt)
+    -- elseif sort
     effects.update(dt) -- flash effect
     end
 end
@@ -64,6 +70,7 @@ function love.draw()
         pongGame:draw()
     elseif state == 'coinflip' then
         coinflipGame:draw()
+    -- elseif sort
     effects.draw() -- draw flash effect
     end
 end
@@ -80,6 +87,7 @@ function love.keypressed(key)
     elseif state == 'coinflip' and key == 'f' then
         -- Reset the coin flip game
         coinflipGame:load()
+    -- elseif sort
     elseif key == 'escape' then
         love.event.quit()
     end
