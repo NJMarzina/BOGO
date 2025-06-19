@@ -1,19 +1,20 @@
 local effects = require('misc.effects')  -- effects module for flashing
 local CoinflipGame = {}
 
+local state = "coinflip"  -- Set the initial state to coinflip
+
 local resultText = ""
---local font
 
 function CoinflipGame:load()
     love.window.setTitle("Coin Flip")
-    font = love.graphics.newFont(18)
+    self.font = love.graphics.newFont(18)
     resultText = "Press SPACE to flip!"
 end
 
 function CoinflipGame:update(dt) end
 
 function CoinflipGame:draw()
-    love.graphics.setFont(font)
+    love.graphics.setFont(self.font)
     love.graphics.printf(resultText, 0, love.graphics.getHeight()/2, love.graphics.getWidth(), "center")
 end
 

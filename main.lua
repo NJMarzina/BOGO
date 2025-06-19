@@ -14,13 +14,13 @@ local speed = 120
 local main_loop = love.audio.newSource("assets/sounds/main_loop.wav", "static") -- Load the main loop sound
 main_loop:setLooping(true) -- Set the sound to loop
 
---local state = 'launcher'
+local state = 'launcher'
 
 function launcher.load()
     love.window.setTitle('BOGO')
     love.window.setMode(1080, 720, {resizable = false, vsync = true})
     main_loop:play() -- Play the main loop sound
-    launcher.font = launcher.font or love.graphics.newFont(18)
+    launcher.font = love.graphics.newFont(18)
     background = love.graphics.newImage("assets/images/minecraft_lush1.jpg")
     turtle = love.graphics.newImage("assets/images/turtle1.png")
     rotation = 0
@@ -35,10 +35,11 @@ function launcher.update(dt)
         x = -turtle:getWidth()
     end
 
-    launcher.font = love.graphics.newFont(18) -- Ensure the font is set
+    --launcher.font = love.graphics.newFont(18) -- Ensure the font is set
 end
 
 function launcher.draw()
+    love.graphics.setFont(launcher.font)
     love.graphics.draw(background, 0, 0, 0, love.graphics.getWidth() / background:getWidth(), love.graphics.getHeight() / background:getHeight())
     love.graphics.draw(turtle, x, y, 0) -- 0 is rotation
     draws:drawKeyboard()
@@ -61,6 +62,8 @@ function love.update(dt)
     -- elseif sort
     effects.update(dt) -- flash effect
     end
+
+    --launcher.font = love.graphics.newFont(18) -- Ensure the font is set
 end
 
 function love.draw()
@@ -84,11 +87,9 @@ function love.keypressed(key)
     elseif state == 'launcher' and key == 'f' then
         state = 'coinflip'
         coinflipGame:load()
-    elseif state == 'coinflip' and key == 'f' then
-        -- Reset the coin flip game
+    elseif state == 'coinflip' and key == 'f' then -- Reset the coin flip game
         coinflipGame:load()
-    -- elseif sort
-    elseif key == 'escape' then
+    elseif key == 'escape' then -- elseif sort here
         love.event.quit()
     end
 end
