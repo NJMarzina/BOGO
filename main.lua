@@ -4,6 +4,7 @@ local launcher = {}        -- temporary stub
 local effects = require('misc.effects')  -- effects module for flashing
 local pongGame = require('pong.pongGame')
 local coinflipGame = require('coinflip.coinflipGame')
+local settings = require('settings.settings')  -- settings module
 
 local draws = require('utils.draws')  -- utility functions for drawing
 local sort = require('utils.sorts')  -- sorting algorithms module
@@ -20,6 +21,7 @@ function launcher.load()
     love.window.setTitle('BOGO')
     love.window.setMode(1080, 720, {resizable = false, vsync = true})
     main_loop:play() -- Play the main loop sound
+    main_loop:setVolume(0.2) -- Set the volume to a reasonable level
     launcher.font = love.graphics.newFont(18)
     background = love.graphics.newImage("assets/images/minecraft_lush1.jpg")
     turtle = love.graphics.newImage("assets/images/turtle1.png")
@@ -60,6 +62,8 @@ function love.update(dt)
     elseif state == 'coinflip' then
         coinflipGame:update(dt)
     -- elseif sort
+    elseif state == 'settings' then
+        settings:update(dt)
     effects.update(dt) -- flash effect
     end
 
@@ -74,6 +78,8 @@ function love.draw()
     elseif state == 'coinflip' then
         coinflipGame:draw()
     -- elseif sort
+    elseif state == 'settings' then
+        settings:draw()
     effects.draw() -- draw flash effect
     end
 end
@@ -89,8 +95,15 @@ function love.keypressed(key)
         coinflipGame:load()
     elseif state == 'coinflip' and key == 'f' then -- Reset the coin flip game
         coinflipGame:load()
-    elseif key == 'escape' then -- elseif sort here
-        love.event.quit()
+    elseif state == 'launcher' and key == 'escape' then -- elseif sort here
+        state = 'settings'
+        settings:load()
+    elseif state == 'settings' and key == 'escape' then
+        returnToLauncher()
+    elseif key == 'escape' then -- if in any other state, load settings; find way to return back to prev state on esc again, rather than launcher
+        state = 'settings'
+        settings:load()
+        --love.event.quit()
     end
 end
 
