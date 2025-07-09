@@ -5,6 +5,7 @@ local effects = require('misc.effects')  -- effects module for flashing
 local pongGame = require('pong.pongGame')
 local coinflipGame = require('coinflip.coinflipGame')
 local settings = require('settings.settings')  -- settings module
+local Button = require('utils.Button')  -- Button class for UI elements
 
 local draws = require('utils.draws')  -- utility functions for drawing
 local sort = require('utils.sorts')  -- sorting algorithms module
@@ -67,6 +68,9 @@ function love.update(dt)
     effects.update(dt) -- flash effect
     end
 
+    if Settings.update then
+        Settings:update(dt)
+    end
     --launcher.font = love.graphics.newFont(18) -- Ensure the font is set
 end
 
@@ -106,6 +110,15 @@ function love.keypressed(key)
         --love.event.quit()
     end
 end
+
+function love.mousepressed(x, y, button)
+    if Settings.mousepressed then
+        Settings:mousepressed(x, y, button)
+    end
+end
+
+-- Function to return to the launcher state
+-- This function can be called from anywhere in the code to reset the game state
 
 --helper that any module can call
 function _G.returnToLauncher()
