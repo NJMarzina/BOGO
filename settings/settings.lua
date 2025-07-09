@@ -42,11 +42,12 @@ function Settings:load()
             self:save()
         end),
 
-        Button("Adjust Volume", 10, 280, 150, 30, function()
-            self.audio.volume = self.audio.volume + 0.1
-            if self.audio.volume > 1.0 then
-                self.audio.volume = 0.0
-            end
+        Button("Mute Volume", 10, 280, 150, 30, function()
+            love.audio.setVolume(0)
+        end),
+
+        Button("Unmute Volume", 10, 320, 150, 30, function()
+            love.audio.setVolume(1)
         end)
     }
 
