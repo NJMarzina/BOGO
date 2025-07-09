@@ -11,6 +11,7 @@ To begin this journey, I watched tutorials and have built the basic game Pong. H
 
 0. Pong (6-14-2025)
 1. Coin - flips heads for 25 cents (we are here) (current functionality is a basic coin flip-have to add currency and actual coin itself) (6-16-2025)
+-- added roadblock:: trying to create a settings page as well as coin currently (7-9-2025)
 2. DoC - Solitaire
 3. Poker against AI.. 80% royal flush for AI..
    pair =$1, trips +$3, straight w/8 =$8...
