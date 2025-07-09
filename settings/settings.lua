@@ -80,6 +80,7 @@ end
 
 function Settings:save()
     -- Save settings to a file or database
+    print("Saved button pressed!")
 end
 
 function Settings:mousepressed(x, y, button)
