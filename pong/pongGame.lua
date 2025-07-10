@@ -17,7 +17,7 @@ function PongGame:load()
     self.score = {player = 0, opponent = 0}
     _G.Score   = self.score
 
-    self.font  = love.graphics.newFont(30)
+    --self.font  = love.graphics.newFont(18)
 end
 
 
@@ -34,7 +34,7 @@ function PongGame:draw()
     PongBall:draw()
     PongOpponent:draw()
 
-    love.graphics.setFont(self.font)
+    --love.graphics.setFont(self.font)
     love.graphics.print('Player: '..self.score.player, 50, 50)
     love.graphics.print('Opponent: '..self.score.opponent, love.graphics.getWidth()-250, 50)
 end
