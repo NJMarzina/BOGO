@@ -154,17 +154,17 @@ function Casino:draw()
 end
 
 function Casino:mousepressed(x, y)
-    for position = #deck.cards, 1, -1 do
-        local card = deck.cards[position]
-        if x > card.transform.x
-            and x < card.transform.x + card.transform.width
-            and y > card.transform.y
-            and y < card.transform.y + card.transform.height
-        then
-            card.dragging = true
-            break
-        end
+    for i = #cards, 1, -1 do
+    local card = cards[i]
+    if x > card.transform.x
+        and x < card.transform.x + card.transform.width
+        and y > card.transform.y
+        and y < card.transform.y + card.transform.height
+    then
+        card.dragging = true
+        break
     end
+end
 
     if x > deck.transform.x + deck.transform.width / 2 - 15
         and x < deck.transform.x + deck.transform.width / 2 + 15
@@ -173,23 +173,30 @@ function Casino:mousepressed(x, y)
         local count = 1
         for _, card in ipairs(cards) do
             if not card.is_on_deck then
-                --queue_sound(cardSound, count * 0.05, 1 + count * 0.2)
-                count = count + 1
+                card.is_on_deck = true
                 table.insert(deck.cards, card)
+                count = count + 1
             end
         end
     end
 end
 
 function Casino:mousereleased()
-    for position, card in ipairs(deck.cards) do
-        if card.dragging == true then
-            --love.audio.play(cardSound)
-            card.dragging = false
+    for i = #cards, 1, -1 do
+    local card = cards[i]
+    if card.dragging then
+        card.dragging = false
+        if card.is_on_deck then
             card.is_on_deck = false
-            table.remove(deck.cards, position)
+            for j = #deck.cards, 1, -1 do
+                if deck.cards[j] == card then
+                    table.remove(deck.cards, j)
+                    break
+                end
+            end
         end
     end
+end
 end
 
 return Casino
