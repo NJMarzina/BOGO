@@ -9,6 +9,7 @@ local Button = require('utils.Button')  -- Button class for UI elements
 
 local draws = require('utils.draws')  -- utility functions for drawing
 local sort = require('utils.sorts')  -- sorting algorithms module
+local casino = require('casino.casino')  -- casino module
 
 local x, y, rotation, turtle, background, keyboard
 local speed = 120
@@ -63,6 +64,8 @@ function love.update(dt)
     elseif state == 'coinflip' then
         coinflipGame:update(dt)
     -- elseif sort
+    elseif state == 'casino' then
+        casino:update(dt)
     elseif state == 'settings' then
         settings:update(dt)
     effects.update(dt) -- flash effect
@@ -81,7 +84,8 @@ function love.draw()
         pongGame:draw()
     elseif state == 'coinflip' then
         coinflipGame:draw()
-    -- elseif sort
+    elseif state == 'casino' then
+        casino:draw()
     elseif state == 'settings' then
         settings:draw()
     effects.draw() -- draw flash effect
@@ -99,6 +103,9 @@ function love.keypressed(key)
         coinflipGame:load()
     elseif state == 'coinflip' and key == 'f' then -- Reset the coin flip game
         coinflipGame:load()
+    elseif state == 'launcher' and key == 'c' then
+        state = 'casino'
+        casino:load()  -- Load the casino game
     elseif state == 'launcher' and key == 'escape' then -- elseif sort here
         state = 'settings'
         settings:load()
@@ -112,8 +119,18 @@ function love.keypressed(key)
 end
 
 function love.mousepressed(x, y, button)
-    if Settings.mousepressed then
+    if state == 'settings' and Settings.mousepressed then
         Settings:mousepressed(x, y, button)
+    elseif state == 'casino' and casino.mousepressed then
+        casino:mousepressed(x, y, button)
+    end
+end
+
+function love.mousereleased(x, y, button)
+    if state == 'settings' and Settings.mousereleased then
+        Settings:mousereleased(x, y, button)
+    elseif state == 'casino' and casino.mousereleased then
+        casino:mousereleased(x, y, button)
     end
 end
 

@@ -25,6 +25,8 @@ Settings = {
 require ('settings.settingsBackground')
 local Button = require('utils.Button')
 
+local state = 'settings'
+
 function Settings:load()
     love.window.setTitle("Settings")
     love.window.setMode(800, 600, {resizable = false, vsync = true})
@@ -84,9 +86,11 @@ function Settings:save()
 end
 
 function Settings:mousepressed(x, y, button)
-    if button == 1 then
-        for _, btn in ipairs(self.buttons) do
-            btn:checkClick(x, y)
+    if state == 'settings' then
+        if button == 1 then
+            for _, btn in ipairs(self.buttons) do
+                btn:checkClick(x, y)
+            end
         end
     end
 end
