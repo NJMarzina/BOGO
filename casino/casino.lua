@@ -86,18 +86,17 @@ end
 --    table.insert(sounds, { sound = sound, delay = delay, pitch = pitch })
 --end
 
+local Card = require('cards.Card')
+local StandardDeck = require('cards.StandardDeck')
+
 function Casino:load()
     love.window.setTitle('Casino')
-    --love.window.setMode(1080, 720)
-
-    -- Load the standard deck of cards
-    cardSprite = love.graphics.newImage("assets/images/blue_deck_back.png")
-    --cardSound = love.audio.newSource("card.ogg", "static")
-    --crtShader = love.graphics.newShader("crt.glsl")
     canvas = love.graphics.newCanvas(screenWidth, screenHeight, { type = '2d', readable = true })
+    cards = {}
+    deck.cards = {}
 
-    for _ = 1, 52 do
-        local card = new_card()
+    for _, cardData in ipairs(StandardDeck.cards) do
+        local card = Card:new(cardData)
         table.insert(cards, card)
         table.insert(deck.cards, card)
     end
@@ -136,14 +135,17 @@ function Casino:draw()
         15
     )
     love.graphics.setColor(1, 1, 1, 1)
+    
     for _, card in ipairs(deck.cards) do
-        love.graphics.draw(cardSprite, card.transform.x, card.transform.y, 0, 0.2, 0.2)
+        card:draw()
     end
+
     for _, card in ipairs(cards) do
         if not card.is_on_deck then
-            love.graphics.draw(cardSprite, card.transform.x, card.transform.y, 0, 0.2, 0.2)
+            card:draw()
         end
     end
+
 
     love.graphics.setCanvas()
     love.graphics.setColor({ 1, 1, 1 })
