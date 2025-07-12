@@ -23,7 +23,7 @@ function launcher.load()
     love.window.setTitle('BOGO')
     love.window.setMode(1080, 720, {resizable = false, vsync = true})
     main_loop:play() -- Play the main loop sound
-    main_loop:setVolume(0.2) -- Set the volume to a reasonable level
+    main_loop:setVolume(0) -- Set the volume to a reasonable level
     launcher.font = love.graphics.newFont(18)
     background = love.graphics.newImage("assets/images/minecraft_lush1.jpg")
     turtle = love.graphics.newImage("assets/images/turtle1.png")
