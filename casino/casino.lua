@@ -1,16 +1,10 @@
 Casino = {}
 
---local Card = require('cards.Card')
---local StandardDeck = require('cards.standardDeck')
-
-local state = "casino"
+local Card = require('cards.Card')
+local StandardDeck = require('cards.StandardDeck')
 
 local screenWidth = love.graphics.getWidth()
 local screenHeight = love.graphics.getHeight()
-
-local cardSprite
-local cardSound
-local crtShader
 
 local sounds = {}
 local startTime = love.timer.getTime()
@@ -43,7 +37,7 @@ local function move(card, dt)
     local momentum = 0.75
     local max_velocity = 10
     if (card.target_transform.x ~= card.transform.x or card.velocity.x ~= 0) or
-        (card.target_transform.y ~= card.transform.y or card.velocity.y ~= 0) then
+       (card.target_transform.y ~= card.transform.y or card.velocity.y ~= 0) then
         card.velocity.x = momentum * card.velocity.x +
             (1 - momentum) * (card.target_transform.x - card.transform.x) * 30 * dt
         card.velocity.y = momentum * card.velocity.y +
@@ -59,35 +53,68 @@ local function move(card, dt)
     end
 end
 
-local function new_card()
-    return {
-        dragging = false,
-        transform = {
-            x = (screenWidth - 100) / 2,
-            y = (screenHeight - 150) / 2,
-            width = 140,
-            height = 224
-        },
-        target_transform = {
-            x = (screenWidth - 100) / 2,
-            y = (screenHeight - 150) / 2,
-            width = 140,
-            height = 224
-        },
-        velocity = {
-            x = 0,
-            y = 0,
-        },
-        is_on_deck = true,
-    }
+local function resetDeck()
+    for _, card in ipairs(cards) do
+        card.is_on_deck = true
+    end
+
+    deck.cards = {}
+    for _, card in ipairs(cards) do
+        table.insert(deck.cards, card)
+    end
+
+    align(deck)
 end
 
---local function queue_sound(sound, delay, pitch)
---    table.insert(sounds, { sound = sound, delay = delay, pitch = pitch })
---end
+local function shuffleDeck()
+    resetDeck()
 
-local Card = require('cards.Card')
-local StandardDeck = require('cards.StandardDeck')
+    local bogo = require('utils.sorts').bogoOnce
+    bogo(deck.cards)
+
+    cards = {}
+    for _, card in ipairs(deck.cards) do
+        table.insert(cards, card)
+    end
+
+    align(deck)
+end
+
+local function dealSixCards()
+    local num_to_deal = math.min(6, #deck.cards)
+
+    for i = 1, num_to_deal do
+        local card = deck.cards[#deck.cards - i + 1]  -- top card
+        card.is_on_deck = false
+        for j = #deck.cards, 1, -1 do
+            if deck.cards[j] == card then
+                table.remove(deck.cards, j)
+                break
+            end
+        end
+    end
+
+    local left_x = 50
+    local right_x = screenWidth - 190 -- card width + margin
+    local start_y = screenHeight / 2 - 100
+    local spacing = 80
+
+    local dealt_cards = {}
+    for _, card in ipairs(cards) do
+        if not card.is_on_deck then
+            table.insert(dealt_cards, card)
+        end
+    end
+
+    for i, card in ipairs(dealt_cards) do
+        card.target_transform.y = start_y + spacing * ((i - 1) % 3)
+        if i <= 3 then
+            card.target_transform.x = left_x
+        else
+            card.target_transform.x = right_x
+        end
+    end
+end
 
 function Casino:load()
     love.window.setTitle('Casino')
@@ -104,15 +131,15 @@ function Casino:load()
     math.randomseed(os.time())
     math.random()
 
-    -- shuffle deck using bogosort
     local bogo = require('utils.sorts').bogoOnce
     bogo(deck.cards)
 
-    -- cards = shallow copy of deck.cards
     cards = {}
     for _, card in ipairs(deck.cards) do
         table.insert(cards, card)
     end
+
+    align(deck)
 end
 
 function Casino:update(dt)
@@ -122,7 +149,6 @@ function Casino:update(dt)
             card.target_transform.y = love.mouse.getY() - card.transform.height / 2
         end
         move(card, dt)
-        --align(deck)
     end
 
     for position, sound in ipairs(sounds) do
@@ -141,7 +167,15 @@ function Casino:draw()
     love.graphics.setCanvas(canvas)
     love.graphics.clear(0.937, 0.945, 0.96, 1)
 
-    -- blue button to reset deck
+    -- Red deal button (left)
+    love.graphics.setColor(0.9, 0.1, 0.1, 1)
+    love.graphics.circle("fill",
+        deck.transform.x + deck.transform.width / 2 - 40,
+        deck.transform.y + deck.transform.height + 50,
+        15
+    )
+
+    -- Blue reset button (center)
     love.graphics.setColor(0.015, 0.647, 0.898, 1)
     love.graphics.circle("fill",
         deck.transform.x + deck.transform.width / 2,
@@ -149,18 +183,16 @@ function Casino:draw()
         15
     )
 
-    -- Green shuffle + realign button
-    love.graphics.setColor(0.2, 0.8, 0.3, 1) -- green
+    -- Green shuffle + realign button (right)
+    love.graphics.setColor(0.2, 0.8, 0.3, 1)
     love.graphics.circle("fill",
         deck.transform.x + deck.transform.width / 2 + 40,
         deck.transform.y + deck.transform.height + 50,
         15
     )
 
-
     love.graphics.setColor(1, 1, 1, 1)
 
-    -- Draw all cards, ordered so top cards are last
     for _, card in ipairs(cards) do
         card:draw()
     end
@@ -170,9 +202,8 @@ function Casino:draw()
     love.graphics.draw(canvas, 0, 0)
 end
 
-
 function Casino:mousepressed(x, y)
-    -- Pick the topmost card under the mouse
+    -- Card dragging
     for i = #cards, 1, -1 do
         local card = cards[i]
         if x > card.transform.x
@@ -185,52 +216,34 @@ function Casino:mousepressed(x, y)
         end
     end
 
-    -- Check if reset button (circle below deck) was clicked
+    -- Red deal button (left)
+    if x > deck.transform.x + deck.transform.width / 2 - 55
+        and x < deck.transform.x + deck.transform.width / 2 - 25
+        and y > deck.transform.y + deck.transform.height + 35
+        and y < deck.transform.y + deck.transform.height + 65
+    then
+        shuffleDeck()
+        dealSixCards()
+    end
+
+    -- Blue reset button (center)
     if x > deck.transform.x + deck.transform.width / 2 - 15
         and x < deck.transform.x + deck.transform.width / 2 + 15
         and y > deck.transform.y + deck.transform.height + 50 - 15
         and y < deck.transform.y + deck.transform.height + 50 + 15
     then
-        for _, card in ipairs(cards) do
-            if not card.is_on_deck then
-                card.is_on_deck = true
-                table.insert(deck.cards, card)
-            end
-        end
-
-        -- Re-align deck only after reset
-        align(deck)
+        resetDeck()
     end
 
-    -- Check if shuffle button (green circle) was clicked
+    -- Green shuffle button (right)
     if x > deck.transform.x + deck.transform.width / 2 + 25
         and x < deck.transform.x + deck.transform.width / 2 + 55
         and y > deck.transform.y + deck.transform.height + 35
         and y < deck.transform.y + deck.transform.height + 65
     then
-        for _, card in ipairs(cards) do
-            card.is_on_deck = true
-        end
-
-        deck.cards = {}
-        for _, card in ipairs(cards) do
-            table.insert(deck.cards, card)
-        end
-
-        local bogo = require('utils.sorts').bogoOnce
-        bogo(deck.cards)
-
-        -- re-apply same order to cards table
-        cards = {}
-        for _, card in ipairs(deck.cards) do
-            table.insert(cards, card)
-        end
-
-        align(deck)
+        shuffleDeck()
     end
-
 end
-
 
 function Casino:mousereleased()
     for i = #cards, 1, -1 do
@@ -238,9 +251,7 @@ function Casino:mousereleased()
         if card.dragging then
             card.dragging = false
             if card.is_on_deck then
-                -- mark off-deck
                 card.is_on_deck = false
-                -- remove from deck.cards (but keep in cards)
                 for j = #deck.cards, 1, -1 do
                     if deck.cards[j] == card then
                         table.remove(deck.cards, j)
@@ -248,10 +259,8 @@ function Casino:mousereleased()
                     end
                 end
             end
-            -- allow it to keep current transform (don't reset its target)
         end
     end
 end
-
 
 return Casino
