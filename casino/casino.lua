@@ -141,12 +141,22 @@ function Casino:draw()
     love.graphics.setCanvas(canvas)
     love.graphics.clear(0.937, 0.945, 0.96, 1)
 
+    -- blue button to reset deck
     love.graphics.setColor(0.015, 0.647, 0.898, 1)
     love.graphics.circle("fill",
         deck.transform.x + deck.transform.width / 2,
         deck.transform.y + deck.transform.height + 50,
         15
     )
+
+    -- Green shuffle + realign button
+    love.graphics.setColor(0.2, 0.8, 0.3, 1) -- green
+    love.graphics.circle("fill",
+        deck.transform.x + deck.transform.width / 2 + 40,
+        deck.transform.y + deck.transform.height + 50,
+        15
+    )
+
 
     love.graphics.setColor(1, 1, 1, 1)
 
@@ -191,6 +201,34 @@ function Casino:mousepressed(x, y)
         -- Re-align deck only after reset
         align(deck)
     end
+
+    -- Check if shuffle button (green circle) was clicked
+    if x > deck.transform.x + deck.transform.width / 2 + 25
+        and x < deck.transform.x + deck.transform.width / 2 + 55
+        and y > deck.transform.y + deck.transform.height + 35
+        and y < deck.transform.y + deck.transform.height + 65
+    then
+        for _, card in ipairs(cards) do
+            card.is_on_deck = true
+        end
+
+        deck.cards = {}
+        for _, card in ipairs(cards) do
+            table.insert(deck.cards, card)
+        end
+
+        local bogo = require('utils.sorts').bogoOnce
+        bogo(deck.cards)
+
+        -- re-apply same order to cards table
+        cards = {}
+        for _, card in ipairs(deck.cards) do
+            table.insert(cards, card)
+        end
+
+        align(deck)
+    end
+
 end
 
 
