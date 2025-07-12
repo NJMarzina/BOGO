@@ -100,6 +100,19 @@ function Casino:load()
         table.insert(cards, card)
         table.insert(deck.cards, card)
     end
+
+    math.randomseed(os.time())
+    math.random()
+
+    -- shuffle deck using bogosort
+    local bogo = require('utils.sorts').bogoOnce
+    bogo(deck.cards)
+
+    -- cards = shallow copy of deck.cards
+    cards = {}
+    for _, card in ipairs(deck.cards) do
+        table.insert(cards, card)
+    end
 end
 
 function Casino:update(dt)
@@ -109,7 +122,7 @@ function Casino:update(dt)
             card.target_transform.y = love.mouse.getY() - card.transform.height / 2
         end
         move(card, dt)
-        align(deck)
+        --align(deck)
     end
 
     for position, sound in ipairs(sounds) do
@@ -127,78 +140,80 @@ end
 function Casino:draw()
     love.graphics.setCanvas(canvas)
     love.graphics.clear(0.937, 0.945, 0.96, 1)
+
     love.graphics.setColor(0.015, 0.647, 0.898, 1)
-    love.graphics.circle(
-        "fill",
+    love.graphics.circle("fill",
         deck.transform.x + deck.transform.width / 2,
         deck.transform.y + deck.transform.height + 50,
         15
     )
+
     love.graphics.setColor(1, 1, 1, 1)
-    
-    for _, card in ipairs(deck.cards) do
+
+    -- Draw all cards, ordered so top cards are last
+    for _, card in ipairs(cards) do
         card:draw()
     end
 
-    for _, card in ipairs(cards) do
-        if not card.is_on_deck then
-            card:draw()
+    love.graphics.setCanvas()
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.draw(canvas, 0, 0)
+end
+
+
+function Casino:mousepressed(x, y)
+    -- Pick the topmost card under the mouse
+    for i = #cards, 1, -1 do
+        local card = cards[i]
+        if x > card.transform.x
+            and x < card.transform.x + card.transform.width
+            and y > card.transform.y
+            and y < card.transform.y + card.transform.height
+        then
+            card.dragging = true
+            break
         end
     end
 
-
-    love.graphics.setCanvas()
-    love.graphics.setColor({ 1, 1, 1 })
-    --crtShader:send('millis', love.timer.getTime() - startTime)
-    --love.graphics.setShader(crtShader)
-    love.graphics.draw(canvas, 0, 0)
-    --love.graphics.setShader()
-end
-
-function Casino:mousepressed(x, y)
-    for i = #cards, 1, -1 do
-    local card = cards[i]
-    if x > card.transform.x
-        and x < card.transform.x + card.transform.width
-        and y > card.transform.y
-        and y < card.transform.y + card.transform.height
-    then
-        card.dragging = true
-        break
-    end
-end
-
+    -- Check if reset button (circle below deck) was clicked
     if x > deck.transform.x + deck.transform.width / 2 - 15
         and x < deck.transform.x + deck.transform.width / 2 + 15
         and y > deck.transform.y + deck.transform.height + 50 - 15
-        and y < deck.transform.y + deck.transform.height + 50 + 15 then
-        local count = 1
+        and y < deck.transform.y + deck.transform.height + 50 + 15
+    then
         for _, card in ipairs(cards) do
             if not card.is_on_deck then
                 card.is_on_deck = true
                 table.insert(deck.cards, card)
-                count = count + 1
             end
+        end
+
+        -- Re-align deck only after reset
+        align(deck)
+    end
+end
+
+
+function Casino:mousereleased()
+    for i = #cards, 1, -1 do
+        local card = cards[i]
+        if card.dragging then
+            card.dragging = false
+            if card.is_on_deck then
+                -- mark off-deck
+                card.is_on_deck = false
+                -- remove from deck.cards (but keep in cards)
+                for j = #deck.cards, 1, -1 do
+                    if deck.cards[j] == card then
+                        table.remove(deck.cards, j)
+                        break
+                    end
+                end
+            end
+            -- allow it to keep current transform (don't reset its target)
         end
     end
 end
 
-function Casino:mousereleased()
-    for i = #cards, 1, -1 do
-    local card = cards[i]
-    if card.dragging then
-        card.dragging = false
-        if card.is_on_deck then
-            card.is_on_deck = false
-            for j = #deck.cards, 1, -1 do
-                if deck.cards[j] == card then
-                    table.remove(deck.cards, j)
-                    break
-                end
-            end
-        end
-    end
-end
-end
 
 return Casino
