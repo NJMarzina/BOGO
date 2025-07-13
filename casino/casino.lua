@@ -11,31 +11,68 @@ local startTime = love.timer.getTime()
 
 local canvas
 
+-- https://www.shadertoy.com/view/XlfGRj
 local backgroundShader = love.graphics.newShader([[
-    extern number time;
+    extern vec2 iResolution;
+    extern number iTime;
+    extern vec2 iMouse;
 
-    vec4 effect(vec4 color, Image tex, vec2 tex_coords, vec2 screen_coords) {
-        vec2 center = love_ScreenSize.xy * vec2(0.6, 0.5); // use .xy here
-        vec2 pos = screen_coords - center;
+    const int iterations = 17;
+    const float formuparam = 0.53;
 
-        float radius = length(pos);
-        float angle = atan(pos.y, pos.x);
+    const int volsteps = 20;
+    const float stepsize = 0.1;
 
-        float swirl = 0.3 * sin(radius * 0.07 - time * 0.4);
+    const float zoom = 0.800;
+    const float tile = 0.850;
+    const float speed = 0.010;
 
-        float newAngle = angle + swirl;
-        vec2 newPos = vec2(cos(newAngle), sin(newAngle)) * radius + center;
+    const float brightness = 0.0015;
+    const float darkmatter = 0.300;
+    const float distfading = 0.730;
+    const float saturation = 0.850;
 
-        float variation = 0.1 * sin(newPos.x * 0.03 + time) * cos(newPos.y * 0.03 + time * 1.7);
+    vec4 effect(vec4 color, Image tex, vec2 tex_coords, vec2 fragCoord) {
+        vec2 uv = fragCoord / iResolution - 0.5;
+        uv.y *= iResolution.y / iResolution.x;
+        vec3 dir = vec3(uv * zoom, 1.0);
+        float time = iTime * speed + 0.25;
 
-        vec3 baseColor = vec3(0.92, 1.0, 0.96);
+        float a1 = 0.5;
+        float a2 = 0.8;
+        mat2 rot1 = mat2(cos(a1), sin(a1), -sin(a1), cos(a1));
+        mat2 rot2 = mat2(cos(a2), sin(a2), -sin(a2), cos(a2));
+        dir.xz *= rot1;
+        dir.xy *= rot2;
 
-        vec3 finalColor = baseColor + variation;
+        vec3 from = vec3(1.0, 0.5, 0.5);
+        from += vec3(time * 2.0, time, -2.0);
+        from.xz *= rot1;
+        from.xy *= rot2;
 
-        return vec4(finalColor, 1.0);
+        float s = 0.1, fade = 1.0;
+        vec3 v = vec3(0.0);
+        for (int r = 0; r < volsteps; r++) {
+            vec3 p = from + s * dir * 0.5;
+            p = abs(vec3(tile) - mod(p, vec3(tile * 2.0)));
+            float pa = 0.0, a = 0.0;
+            for (int i = 0; i < iterations; i++) {
+                p = abs(p) / dot(p, p) - formuparam;
+                a += abs(length(p) - pa);
+                pa = length(p);
+            }
+            float dm = max(0.0, darkmatter - a * a * 0.001);
+            a *= a * a;
+            if (r > 6) fade *= 1.0 - dm;
+            v += fade;
+            v += vec3(s, s * s, s * s * s * s) * a * brightness * fade;
+            fade *= distfading;
+            s += stepsize;
+        }
+        v = mix(vec3(length(v)), v, saturation);
+        return vec4(v * 0.01, 1.0);
     }
 ]])
-
 
 local deck = {
     cards = {},
@@ -200,7 +237,10 @@ end
 
 function Casino:update(dt)
     self.time = self.time + dt
-    backgroundShader:send("time", self.time)
+
+    backgroundShader:send("iTime", self.time)
+    backgroundShader:send("iResolution", {screenWidth, screenHeight})
+    --backgroundShader:send("iMouse", {love.mouse.getX(), love.mouse.getY()})
 
     for _, card in ipairs(cards) do
         if card.dragging then
