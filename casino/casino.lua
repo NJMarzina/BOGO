@@ -96,18 +96,21 @@ local dropZones = {
         y = dropZoneY,
         width = dropZoneWidth,
         height = dropZoneHeight,
+        card = nil,
     },
     {
         x = screenWidth / 2 - dropZoneWidth / 2,
         y = dropZoneY,
         width = dropZoneWidth,
         height = dropZoneHeight,
+        card = nil,
     },
     {
         x = screenWidth / 2 + dropZoneSpacing,
         y = dropZoneY,
         width = dropZoneWidth,
         height = dropZoneHeight,
+        card = nil,
     }
 }
 
@@ -281,6 +284,12 @@ function Casino:draw()
         love.graphics.setColor(0, 0, 0, 0.9) -- black border
         love.graphics.setLineWidth(2)
         love.graphics.rectangle("line", zone.x, zone.y, zone.width, zone.height, 10, 10)
+
+        if zone.card then
+            love.graphics.setColor(1, 0.84, 0, 1) -- gold color
+            local barHeight = 8
+            love.graphics.rectangle("fill", zone.x, zone.y + zone.height + 4, zone.width, barHeight, 4, 4)
+        end
     end
 
     -- Draw control buttons centered above middle drop zone
@@ -298,6 +307,19 @@ function Casino:draw()
     -- Green shuffle button (right)
     love.graphics.setColor(0.2, 0.8, 0.3, 1)
     love.graphics.circle("fill", centerX + 40, buttonY, 15)
+
+    -- Submit Button
+    local submitX = dropZones[3].x + dropZones[3].width + 30
+    local submitY = dropZones[3].y + dropZones[3].height / 2 - 15
+    local submitWidth = 80
+    local submitHeight = 30
+
+    Casino.submitButton = { x = submitX, y = submitY, w = submitWidth, h = submitHeight }
+
+    love.graphics.setColor(0.3, 0.7, 0.9, 1)
+    love.graphics.rectangle("fill", submitX, submitY, submitWidth, submitHeight, 8)
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.printf("SUBMIT", submitX, submitY + 7, submitWidth, "center")
 
     -- Draw all cards
     love.graphics.setColor(1, 1, 1, 1)
@@ -344,14 +366,59 @@ function Casino:mousepressed(x, y)
     if x > centerX + 25 and x < centerX + 55 and y > buttonY - 15 and y < buttonY + 15 then
         shuffleDeck()
     end
+
+    -- submit button
+    if Casino.submitButton then
+    local b = Casino.submitButton
+    if x > b.x and x < b.x + b.w and y > b.y and y < b.y + b.h then
+        local hand = {}
+        for _, zone in ipairs(dropZones) do
+            if zone.card then table.insert(hand, zone.card) end
+        end
+        Casino:evaluateHand(hand)
+    end
 end
 
+end
 
 function Casino:mousereleased()
     for i = #cards, 1, -1 do
         local card = cards[i]
         if card.dragging then
             card.dragging = false
+
+            -- Remove card from any drop zone before placing it in a new one
+            for _, zone in ipairs(dropZones) do
+                if zone.card == card then
+                    zone.card = nil
+                end
+            end
+
+            -- Check if card is dropped inside a drop zone
+            local placedInZone = false
+            for _, zone in ipairs(dropZones) do
+                if not zone.card and
+                   card.transform.x + card.transform.width / 2 > zone.x and
+                   card.transform.x + card.transform.width / 2 < zone.x + zone.width and
+                   card.transform.y + card.transform.height / 2 > zone.y and
+                   card.transform.y + card.transform.height / 2 < zone.y + zone.height then
+                    zone.card = card
+                    -- Center card inside zone (scale if needed)
+                    card.target_transform.width = zone.width
+                    card.target_transform.height = zone.height
+                    card.target_transform.x = zone.x * 1.02
+                    card.target_transform.y = zone.y * 1.02
+                    placedInZone = true
+                    break
+                end
+            end
+
+            if not placedInZone then
+                -- If card not placed in zone, reset its target to wherever you want, e.g., deal area or deck
+                -- For simplicity, keep card where it was dropped (no snapping)
+                -- Or add your reposition logic here
+            end
+
             if card.is_on_deck then
                 card.is_on_deck = false
                 for j = #deck.cards, 1, -1 do
@@ -361,6 +428,47 @@ function Casino:mousereleased()
                     end
                 end
             end
+        end
+    end
+end
+
+
+function Casino:evaluateHand(hand)
+    if #hand == 0 then
+        print("No cards submitted")
+        return
+    elseif #hand == 1 then
+        print("High Card:", hand[1].name)
+        return
+    elseif #hand == 2 then
+        if hand[1].value == hand[2].value then
+            print("One Pair")
+        else
+            print("No Hand")
+        end
+        return
+    elseif #hand == 3 then
+        table.sort(hand, function(a, b) return a.value < b.value end)
+        local v1, v2, v3 = hand[1].value, hand[2].value, hand[3].value
+        local s1, s2, s3 = hand[1].suit, hand[2].suit, hand[3].suit
+
+        local isFlush = (s1 == s2) and (s2 == s3)
+        local isStraight = (v2 == v1 + 1) and (v3 == v2 + 1)
+        local isTrips = (v1 == v2 and v2 == v3)
+        local isPair = (v1 == v2 or v2 == v3 or v1 == v3)
+
+        if isStraight and isFlush then
+            print("Straight Flush")
+        elseif isTrips then
+            print("Trips")
+        elseif isFlush then
+            print("Flush")
+        elseif isStraight then
+            print("Straight")
+        elseif isPair then
+            print("One Pair")
+        else
+            print("High Card")
         end
     end
 end
