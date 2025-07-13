@@ -21,6 +21,33 @@ local deck = {
     }
 }
 
+local dropZoneWidth = 140 * 0.85
+local dropZoneHeight = 224 * 0.75  -- shorter
+local dropZoneSpacing = 90         -- more spacing
+
+local dropZoneY = screenHeight - dropZoneHeight - 40
+
+local dropZones = {
+    {
+        x = screenWidth / 2 - dropZoneWidth - dropZoneSpacing,
+        y = dropZoneY,
+        width = dropZoneWidth,
+        height = dropZoneHeight,
+    },
+    {
+        x = screenWidth / 2 - dropZoneWidth / 2,
+        y = dropZoneY,
+        width = dropZoneWidth,
+        height = dropZoneHeight,
+    },
+    {
+        x = screenWidth / 2 + dropZoneSpacing,
+        y = dropZoneY,
+        width = dropZoneWidth,
+        height = dropZoneHeight,
+    }
+}
+
 local cards = {}
 
 local function align(deck)
@@ -145,9 +172,11 @@ end
 function Casino:update(dt)
     for _, card in ipairs(cards) do
         if card.dragging then
-            card.target_transform.x = love.mouse.getX() - card.transform.width / 2
-            card.target_transform.y = love.mouse.getY() - card.transform.height / 2
+            local mx, my = love.mouse.getPosition()
+            card.target_transform.x = mx - (card.drag_offset_x or 0)
+            card.target_transform.y = my - (card.drag_offset_y or 0)
         end
+
         move(card, dt)
     end
 
@@ -167,32 +196,34 @@ function Casino:draw()
     love.graphics.setCanvas(canvas)
     love.graphics.clear(0.937, 0.945, 0.96, 1)
 
+    -- Draw drop zones
+    for _, zone in ipairs(dropZones) do
+        love.graphics.setColor(0.2, 0.5, 0.2, 0.15) -- translucent fill
+        love.graphics.rectangle("fill", zone.x, zone.y, zone.width, zone.height, 10, 10)
+
+        love.graphics.setColor(0, 0, 0, 0.9) -- black border
+        love.graphics.setLineWidth(2)
+        love.graphics.rectangle("line", zone.x, zone.y, zone.width, zone.height, 10, 10)
+    end
+
+    -- Draw control buttons centered above middle drop zone
+    local centerX = dropZones[2].x + dropZones[2].width / 2
+    local buttonY = dropZones[2].y - 40
+
     -- Red deal button (left)
     love.graphics.setColor(0.9, 0.1, 0.1, 1)
-    love.graphics.circle("fill",
-        deck.transform.x + deck.transform.width / 2 - 40,
-        deck.transform.y + deck.transform.height + 50,
-        15
-    )
+    love.graphics.circle("fill", centerX - 40, buttonY, 15)
 
     -- Blue reset button (center)
     love.graphics.setColor(0.015, 0.647, 0.898, 1)
-    love.graphics.circle("fill",
-        deck.transform.x + deck.transform.width / 2,
-        deck.transform.y + deck.transform.height + 50,
-        15
-    )
+    love.graphics.circle("fill", centerX, buttonY, 15)
 
-    -- Green shuffle + realign button (right)
+    -- Green shuffle button (right)
     love.graphics.setColor(0.2, 0.8, 0.3, 1)
-    love.graphics.circle("fill",
-        deck.transform.x + deck.transform.width / 2 + 40,
-        deck.transform.y + deck.transform.height + 50,
-        15
-    )
+    love.graphics.circle("fill", centerX + 40, buttonY, 15)
 
+    -- Draw all cards
     love.graphics.setColor(1, 1, 1, 1)
-
     for _, card in ipairs(cards) do
         card:draw()
     end
@@ -202,8 +233,8 @@ function Casino:draw()
     love.graphics.draw(canvas, 0, 0)
 end
 
+
 function Casino:mousepressed(x, y)
-    -- Card dragging
     for i = #cards, 1, -1 do
         local card = cards[i]
         if x > card.transform.x
@@ -212,38 +243,32 @@ function Casino:mousepressed(x, y)
             and y < card.transform.y + card.transform.height
         then
             card.dragging = true
+            card.drag_offset_x = x - card.transform.x
+            card.drag_offset_y = y - card.transform.y
             break
         end
     end
 
     -- Red deal button (left)
-    if x > deck.transform.x + deck.transform.width / 2 - 55
-        and x < deck.transform.x + deck.transform.width / 2 - 25
-        and y > deck.transform.y + deck.transform.height + 35
-        and y < deck.transform.y + deck.transform.height + 65
-    then
+    local centerX = dropZones[2].x + dropZones[2].width / 2
+    local buttonY = dropZones[2].y - 40
+
+    if x > centerX - 55 and x < centerX - 25 and y > buttonY - 15 and y < buttonY + 15 then
         shuffleDeck()
         dealSixCards()
     end
 
     -- Blue reset button (center)
-    if x > deck.transform.x + deck.transform.width / 2 - 15
-        and x < deck.transform.x + deck.transform.width / 2 + 15
-        and y > deck.transform.y + deck.transform.height + 50 - 15
-        and y < deck.transform.y + deck.transform.height + 50 + 15
-    then
+    if x > centerX - 15 and x < centerX + 15 and y > buttonY - 15 and y < buttonY + 15 then
         resetDeck()
     end
 
     -- Green shuffle button (right)
-    if x > deck.transform.x + deck.transform.width / 2 + 25
-        and x < deck.transform.x + deck.transform.width / 2 + 55
-        and y > deck.transform.y + deck.transform.height + 35
-        and y < deck.transform.y + deck.transform.height + 65
-    then
+    if x > centerX + 25 and x < centerX + 55 and y > buttonY - 15 and y < buttonY + 15 then
         shuffleDeck()
     end
 end
+
 
 function Casino:mousereleased()
     for i = #cards, 1, -1 do
