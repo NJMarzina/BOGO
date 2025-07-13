@@ -1,5 +1,5 @@
 Casino = {}
-
+--1
 local Card = require('cards.Card')
 local StandardDeck = require('cards.StandardDeck')
 
@@ -10,6 +10,32 @@ local sounds = {}
 local startTime = love.timer.getTime()
 
 local canvas
+
+local backgroundShader = love.graphics.newShader([[
+    extern number time;
+
+    vec4 effect(vec4 color, Image tex, vec2 tex_coords, vec2 screen_coords) {
+        vec2 center = love_ScreenSize.xy * vec2(0.6, 0.5); // use .xy here
+        vec2 pos = screen_coords - center;
+
+        float radius = length(pos);
+        float angle = atan(pos.y, pos.x);
+
+        float swirl = 0.3 * sin(radius * 0.07 - time * 0.4);
+
+        float newAngle = angle + swirl;
+        vec2 newPos = vec2(cos(newAngle), sin(newAngle)) * radius + center;
+
+        float variation = 0.1 * sin(newPos.x * 0.03 + time) * cos(newPos.y * 0.03 + time * 1.7);
+
+        vec3 baseColor = vec3(0.92, 1.0, 0.96);
+
+        vec3 finalColor = baseColor + variation;
+
+        return vec4(finalColor, 1.0);
+    }
+]])
+
 
 local deck = {
     cards = {},
@@ -145,6 +171,9 @@ end
 
 function Casino:load()
     love.window.setTitle('Casino')
+
+    Casino.time = 0
+
     canvas = love.graphics.newCanvas(screenWidth, screenHeight, { type = '2d', readable = true })
     cards = {}
     deck.cards = {}
@@ -170,6 +199,9 @@ function Casino:load()
 end
 
 function Casino:update(dt)
+    self.time = self.time + dt
+    backgroundShader:send("time", self.time)
+
     for _, card in ipairs(cards) do
         if card.dragging then
             local mx, my = love.mouse.getPosition()
@@ -194,7 +226,11 @@ end
 
 function Casino:draw()
     love.graphics.setCanvas(canvas)
-    love.graphics.clear(0.937, 0.945, 0.96, 1)
+
+    love.graphics.setShader(backgroundShader)
+    love.graphics.rectangle("fill", 0, 0, screenWidth, screenHeight)
+    love.graphics.setShader()
+
 
     -- Draw drop zones
     for _, zone in ipairs(dropZones) do
