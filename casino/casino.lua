@@ -242,6 +242,7 @@ function Casino:update(dt)
     backgroundShader:send("iResolution", {screenWidth, screenHeight})
     --backgroundShader:send("iMouse", {love.mouse.getX(), love.mouse.getY()})
 
+
     for _, card in ipairs(cards) do
         if card.dragging then
             local mx, my = love.mouse.getPosition()
