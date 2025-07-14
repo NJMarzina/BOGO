@@ -12,9 +12,9 @@ StandardDeck.cards = {
     { name = "8 of Spades", value = 8, suit = "Spades", image = "assets/images/8_of_spades.png" },
     { name = "9 of Spades", value = 9, suit = "Spades", image = "assets/images/9_of_spades.png" },
     { name = "10 of Spades", value = 10, suit = "Spades", image = "assets/images/10_of_spades.png" },
-    { name = "Jack of Spades", value = 10, suit = "Spades", image = "assets/images/jack_of_spades.png" },
-    { name = "Queen of Spades", value = 10, suit = "Spades", image = "assets/images/queen_of_spades.png" },
-    { name = "King of Spades", value = 10, suit = "Spades", image = "assets/images/king_of_spades.png" },
+    { name = "Jack of Spades", value = 11, suit = "Spades", image = "assets/images/jack_of_spades.png" },
+    { name = "Queen of Spades", value = 12, suit = "Spades", image = "assets/images/queen_of_spades.png" },
+    { name = "King of Spades", value = 13, suit = "Spades", image = "assets/images/king_of_spades.png" },
 
     { name = "Ace of Hearts", value = 1, suit = "Hearts" , image = "assets/images/ace_of_hearts.png" },
     { name = "2 of Hearts", value = 2, suit = "Hearts", image = "assets/images/2_of_hearts.png" },
@@ -26,9 +26,9 @@ StandardDeck.cards = {
     { name = "8 of Hearts", value = 8, suit = "Hearts", image = "assets/images/8_of_hearts.png" },
     { name = "9 of Hearts", value = 9, suit = "Hearts", image = "assets/images/9_of_hearts.png" },
     { name = "10 of Hearts", value = 10, suit = "Hearts", image = "assets/images/10_of_hearts.png" },
-    { name = "Jack of Hearts", value = 10, suit = "Hearts", image = "assets/images/jack_of_hearts.png" },
-    { name = "Queen of Hearts", value = 10, suit = "Hearts", image = "assets/images/queen_of_hearts.png" },
-    { name = "King of Hearts", value = 10, suit = "Hearts", image = "assets/images/king_of_hearts.png" },
+    { name = "Jack of Hearts", value = 11, suit = "Hearts", image = "assets/images/jack_of_hearts.png" },
+    { name = "Queen of Hearts", value = 12, suit = "Hearts", image = "assets/images/queen_of_hearts.png" },
+    { name = "King of Hearts", value = 13, suit = "Hearts", image = "assets/images/king_of_hearts.png" },
 
     { name = "Ace of Diamonds", value = 1, suit = "Diamonds", image = "assets/images/ace_of_diamonds.png" },
     { name = "2 of Diamonds", value = 2, suit = "Diamonds", image = "assets/images/2_of_diamonds.png" },
@@ -40,9 +40,9 @@ StandardDeck.cards = {
     { name = "8 of Diamonds", value = 8, suit = "Diamonds", image = "assets/images/8_of_diamonds.png" },
     { name = "9 of Diamonds", value = 9, suit = "Diamonds", image = "assets/images/9_of_diamonds.png" },
     { name = "10 of Diamonds", value = 10, suit = "Diamonds", image = "assets/images/10_of_diamonds.png" },
-    { name = "Jack of Diamonds", value = 10, suit = "Diamonds", image = "assets/images/jack_of_diamonds.png" },
-    { name = "Queen of Diamonds", value = 10, suit = "Diamonds", image = "assets/images/queen_of_diamonds.png" },
-    { name = "King of Diamonds", value = 10, suit = "Diamonds", image = "assets/images/king_of_diamonds.png" },
+    { name = "Jack of Diamonds", value = 11, suit = "Diamonds", image = "assets/images/jack_of_diamonds.png" },
+    { name = "Queen of Diamonds", value = 12, suit = "Diamonds", image = "assets/images/queen_of_diamonds.png" },
+    { name = "King of Diamonds", value = 13, suit = "Diamonds", image = "assets/images/king_of_diamonds.png" },
 
     { name = "Ace of Clubs", value = 1, suit = "Clubs", image = "assets/images/ace_of_clubs.png" },
     { name = "2 of Clubs", value = 2, suit = "Clubs", image = "assets/images/2_of_clubs.png" },
@@ -54,9 +54,9 @@ StandardDeck.cards = {
     { name = "8 of Clubs", value = 8, suit = "Clubs", image = "assets/images/8_of_clubs.png" },
     { name = "9 of Clubs", value = 9, suit = "Clubs", image = "assets/images/9_of_clubs.png" },
     { name = "10 of Clubs", value = 10, suit = "Clubs", image = "assets/images/10_of_clubs.png" },
-    { name = "Jack of Clubs", value = 10, suit = "Clubs", image = "assets/images/jack_of_clubs.png" },
-    { name = "Queen of Clubs", value = 10, suit = "Clubs", image = "assets/images/queen_of_clubs.png" },
-    { name = "King of Clubs", value = 10, suit = "Clubs", image = "assets/images/king_of_clubs.png" }
+    { name = "Jack of Clubs", value = 11, suit = "Clubs", image = "assets/images/jack_of_clubs.png" },
+    { name = "Queen of Clubs", value = 12, suit = "Clubs", image = "assets/images/queen_of_clubs.png" },
+    { name = "King of Clubs", value = 13, suit = "Clubs", image = "assets/images/king_of_clubs.png" }
 
 }
 

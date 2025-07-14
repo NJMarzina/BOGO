@@ -434,6 +434,32 @@ end
 
 
 function Casino:evaluateHand(hand)
+    local function isStraight3(a, b, c)
+        local vals = {a, b, c}
+        table.sort(vals)
+
+        if vals[2] == vals[1] + 1 and vals[3] == vals[2] + 1 then
+            return true
+        end
+
+        -- 2-A-K check
+        local hasAce = false
+        local hasTwo = false
+        local hasKing = false
+
+        for _, v in ipairs(vals) do
+            if v == 1 then hasAce = true end
+            if v == 2 then hasTwo = true end
+            if v == 13 then hasKing = true end
+        end
+
+        if hasAce and hasTwo and hasKing then
+            return true
+        end
+
+        return false
+    end
+
     if #hand == 0 then
         print("No cards submitted")
         return
@@ -453,7 +479,9 @@ function Casino:evaluateHand(hand)
         local s1, s2, s3 = hand[1].suit, hand[2].suit, hand[3].suit
 
         local isFlush = (s1 == s2) and (s2 == s3)
-        local isStraight = (v2 == v1 + 1) and (v3 == v2 + 1)
+
+        local isStraight = isStraight3(v1, v2, v3)
+
         local isTrips = (v1 == v2 and v2 == v3)
         local isPair = (v1 == v2 or v2 == v3 or v1 == v3)
 
@@ -472,5 +500,8 @@ function Casino:evaluateHand(hand)
         end
     end
 end
+
+
+
 
 return Casino
