@@ -400,6 +400,21 @@ function Casino:draw()
                 dropZoneGameButtons[i] = Button(game.name, buttonX, buttonY, buttonWidth, buttonHeight, function()
                     print("Launching game:", game.name)
                     -- add rest of the game launching logic here
+                    if game.name == "Dice" then
+                        local newDice = Dice:new(6)
+                        newDice.value = newDice:roll()
+                        print("Dice rolled:", newDice.value)
+                    elseif game.name == "Blackjack" then
+                        print("Dealer BJ u Lose! lol")
+                    elseif game.name == "Coin Flip" then
+                        print("Coin Flip: " .. (math.random() < 0.5 and "Heads" or "Tails"))
+                    elseif game.name == "BOGO" then
+                        print("BOGO activated! Buy one get one free!")
+                    elseif game.name == "Plinko" then
+                        print("Plinko game dubskiii!")
+                    elseif game.name == "Dealer's Choice" then
+                        print("Dealer's Choice selected! Choose your game!")
+                    end
                 end)
             end
         end
