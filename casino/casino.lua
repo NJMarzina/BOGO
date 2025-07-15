@@ -2,11 +2,21 @@ Casino = {}
 --1
 local Card = require('cards.Card')
 local StandardDeck = require('cards.StandardDeck')
+local Dice = require('casino.dice')
+local Hands = require('casino.hands')
 
 local screenWidth = love.graphics.getWidth()
 local screenHeight = love.graphics.getHeight()
 
 local sounds = {}
+local gameIcons = {
+    ["Dice"] = love.graphics.newImage("assets/images/dice1.png"),
+    ["Blackjack"] = love.graphics.newImage("assets/images/bj1.png"),
+    ["Coin Flip"] = love.graphics.newImage("assets/images/coin_heads.png"),
+    ["BOGO"] = love.graphics.newImage("assets/images/bogo1.png"),
+    ["Plinko"] = love.graphics.newImage("assets/images/plinko1.png"),
+    ["Dealer's Choice"] = love.graphics.newImage("assets/images/frog8.png")
+}
 local startTime = love.timer.getTime()
 
 local canvas
@@ -321,6 +331,55 @@ function Casino:draw()
     love.graphics.setColor(1, 1, 1)
     love.graphics.printf("SUBMIT", submitX, submitY + 7, submitWidth, "center")
 
+    -- Draw game icons above drop zone cards
+    local hand = {}
+    for _, zone in ipairs(dropZones) do
+        if zone.card then
+            table.insert(hand, zone.card)
+        end
+    end
+
+    -- Extract ordered game list based on card order
+    local gameList = {}
+    local gameCounts = {}
+    local inserted = {}
+
+    for _, card in ipairs(hand) do
+        local gamesForCard = Hands.getGameFromHand({card})
+        for _, game in ipairs(gamesForCard) do
+            local name = game.name
+            gameCounts[name] = (gameCounts[name] or 0) + 1
+            if not inserted[name] then
+                table.insert(gameList, name)
+                inserted[name] = true
+            end
+        end
+    end
+
+    -- Draw game icons fixed on top left
+    local baseX = 50
+    local baseY = 50
+    local iconSpacing = 400
+    local drawIndex = 0
+
+    for _, name in ipairs(gameList) do
+        local image = gameIcons[name]
+        if image then
+            local imgWidth = image:getWidth()
+            local imgHeight = image:getHeight()
+            local scaleX = 200 / imgWidth
+            local scaleY = 200 / imgHeight
+
+            for _ = 1, gameCounts[name] do
+                local x = baseX + drawIndex * iconSpacing
+                local y = baseY
+                love.graphics.setColor(1, 1, 1, 1)
+                love.graphics.draw(image, x, y, 0, scaleX, scaleY)
+                drawIndex = drawIndex + 1
+            end
+        end
+    end
+
     -- Draw all cards
     love.graphics.setColor(1, 1, 1, 1)
     for _, card in ipairs(cards) do
@@ -432,76 +491,15 @@ function Casino:mousereleased()
     end
 end
 
-
 function Casino:evaluateHand(hand)
-    local function isStraight3(a, b, c)
-        local vals = {a, b, c}
-        table.sort(vals)
-
-        if vals[2] == vals[1] + 1 and vals[3] == vals[2] + 1 then
-            return true
-        end
-
-        -- 2-A-K check
-        local hasAce = false
-        local hasTwo = false
-        local hasKing = false
-
-        for _, v in ipairs(vals) do
-            if v == 1 then hasAce = true end
-            if v == 2 then hasTwo = true end
-            if v == 13 then hasKing = true end
-        end
-
-        if hasAce and hasTwo and hasKing then
-            return true
-        end
-
-        return false
-    end
-
-    if #hand == 0 then
-        print("No cards submitted")
-        return
-    elseif #hand == 1 then
-        print("High Card:", hand[1].name)
-        return
-    elseif #hand == 2 then
-        if hand[1].value == hand[2].value then
-            print("One Pair")
-        else
-            print("No Hand")
-        end
-        return
-    elseif #hand == 3 then
-        table.sort(hand, function(a, b) return a.value < b.value end)
-        local v1, v2, v3 = hand[1].value, hand[2].value, hand[3].value
-        local s1, s2, s3 = hand[1].suit, hand[2].suit, hand[3].suit
-
-        local isFlush = (s1 == s2) and (s2 == s3)
-
-        local isStraight = isStraight3(v1, v2, v3)
-
-        local isTrips = (v1 == v2 and v2 == v3)
-        local isPair = (v1 == v2 or v2 == v3 or v1 == v3)
-
-        if isStraight and isFlush then
-            print("Straight Flush")
-        elseif isTrips then
-            print("Trips")
-        elseif isFlush then
-            print("Flush")
-        elseif isStraight then
-            print("Straight")
-        elseif isPair then
-            print("One Pair")
-        else
-            print("High Card")
-        end
+    local result = Hands.evaluate(hand)
+    local games = Hands.getGameFromHand(hand)
+    print("Hand Type: " .. result)
+    print("Playable Games:")
+    for _, game in ipairs(Hands.getGameFromHand(hand)) do
+        print("Game:", game.name, "x" .. game.count)
     end
 end
-
-
 
 
 return Casino
