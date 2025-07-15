@@ -1,6 +1,7 @@
+local CardUtils = require('utils.CardUtils')
+
 StandardDeck = {}
 
--- create array of card objects
 StandardDeck.cards = {
     { name = "Ace of Spades", value = 1, suit = "Spades", image = "assets/images/ace_of_spades.png" },
     { name = "2 of Spades", value = 2, suit = "Spades", image = "assets/images/2_of_spades.png" },
@@ -70,6 +71,72 @@ end
 
 function StandardDeck:draw()
 
+end
+
+function StandardDeck.reset(deck, cards, dropZones)
+    for _, card in ipairs(cards) do
+        card.is_on_deck = true
+    end
+
+    deck.cards = {}
+    for _, card in ipairs(cards) do
+        table.insert(deck.cards, card)
+    end
+
+    for _, zone in ipairs(dropZones) do
+        zone.card = nil
+    end
+
+    CardUtils.align(deck)
+end
+
+function StandardDeck.shuffle(deck, cards, dropZones)
+    StandardDeck.reset(deck, cards, dropZones)
+
+    local bogo = require('utils.sorts').bogoOnce
+    bogo(deck.cards)
+
+    for i = #cards, 1, -1 do
+        table.remove(cards, i)
+    end
+
+    for _, card in ipairs(deck.cards) do
+            table.insert(cards, card)
+    end
+
+    CardUtils.align(deck)
+
+    return cards
+end
+
+function StandardDeck.dealSix(deck, cards, screenWidth, screenHeight)
+    local num_to_deal = math.min(6, #deck.cards)
+
+    for i = 1, num_to_deal do
+        local card = table.remove(deck.cards)
+        card.is_on_deck = false
+    end
+
+    local left_x = 50
+    local right_x = screenWidth - 190
+    local start_y = screenHeight / 2 - 100
+    local spacing = 80
+
+    local dealt_cards = {}
+    for _, card in ipairs(cards) do
+        if not card.is_on_deck then
+            table.insert(dealt_cards, card)
+        end
+    end
+
+    for i, card in ipairs(dealt_cards) do
+        card.target_transform.y = start_y + spacing * ((i - 1) % 3)
+        if i <= 3 then
+            card.target_transform.x = left_x
+        else
+            card.target_transform.x = right_x
+        end
+    end
 end
 
 return StandardDeck

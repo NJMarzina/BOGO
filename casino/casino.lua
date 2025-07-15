@@ -4,9 +4,15 @@ local Card = require('cards.Card')
 local StandardDeck = require('cards.StandardDeck')
 local Dice = require('casino.dice')
 local Hands = require('casino.hands')
+local CardUtils = require('utils.CardUtils')
+local Button = require('utils.Button')
 
 local screenWidth = love.graphics.getWidth()
 local screenHeight = love.graphics.getHeight()
+local canvas
+
+local startTime = love.timer.getTime()
+local dropZoneGameButtons = {nil, nil, nil}
 
 local sounds = {}
 local gameIcons = {
@@ -17,12 +23,48 @@ local gameIcons = {
     ["Plinko"] = love.graphics.newImage("assets/images/plinko1.png"),
     ["Dealer's Choice"] = love.graphics.newImage("assets/images/frog8.png")
 }
-local startTime = love.timer.getTime()
 
-local Button = require('utils.Button')
-local dropZoneGameButtons = {nil, nil, nil}
+local showGameButtons = false
+local cards = {}
+local deck = {
+    cards = {},
+    transform = {
+        x = screenWidth / 2 - 100,
+        y = screenHeight / 2 - 150,
+        width = 140,
+        height = 224
+    }
+}
 
-local canvas
+local dropZoneWidth = 140 * 0.85
+local dropZoneHeight = 224 * 0.75  -- shorter
+local dropZoneSpacing = 90         -- more spacing
+
+local dropZoneY = screenHeight - dropZoneHeight - 40
+
+local dropZones = {
+    {
+        x = screenWidth / 2 - dropZoneWidth - dropZoneSpacing,
+        y = dropZoneY,
+        width = dropZoneWidth,
+        height = dropZoneHeight,
+        card = nil,
+    },
+    {
+        x = screenWidth / 2 - dropZoneWidth / 2,
+        y = dropZoneY,
+        width = dropZoneWidth,
+        height = dropZoneHeight,
+        card = nil,
+    },
+    {
+        x = screenWidth / 2 + dropZoneSpacing,
+        y = dropZoneY,
+        width = dropZoneWidth,
+        height = dropZoneHeight,
+        card = nil,
+    }
+}
 
 -- https://www.shadertoy.com/view/XlfGRj
 local backgroundShader = love.graphics.newShader([[
@@ -87,144 +129,6 @@ local backgroundShader = love.graphics.newShader([[
     }
 ]])
 
-local showGameButtons = false
-
-local deck = {
-    cards = {},
-    transform = {
-        x = screenWidth / 2 - 100,
-        y = screenHeight / 2 - 150,
-        width = 140,
-        height = 224
-    }
-}
-
-local dropZoneWidth = 140 * 0.85
-local dropZoneHeight = 224 * 0.75  -- shorter
-local dropZoneSpacing = 90         -- more spacing
-
-local dropZoneY = screenHeight - dropZoneHeight - 40
-
-local dropZones = {
-    {
-        x = screenWidth / 2 - dropZoneWidth - dropZoneSpacing,
-        y = dropZoneY,
-        width = dropZoneWidth,
-        height = dropZoneHeight,
-        card = nil,
-    },
-    {
-        x = screenWidth / 2 - dropZoneWidth / 2,
-        y = dropZoneY,
-        width = dropZoneWidth,
-        height = dropZoneHeight,
-        card = nil,
-    },
-    {
-        x = screenWidth / 2 + dropZoneSpacing,
-        y = dropZoneY,
-        width = dropZoneWidth,
-        height = dropZoneHeight,
-        card = nil,
-    }
-}
-
-local cards = {}
-
-local function align(deck)
-    local deck_height = 10 / #deck.cards
-    for position, card in ipairs(deck.cards) do
-        if not card.dragging then
-            card.target_transform.x = deck.transform.x - deck_height * (position - 1)
-            card.target_transform.y = deck.transform.y + deck_height * (position - 1)
-        end
-    end
-end
-
-local function move(card, dt)
-    local momentum = 0.75
-    local max_velocity = 10
-    if (card.target_transform.x ~= card.transform.x or card.velocity.x ~= 0) or
-       (card.target_transform.y ~= card.transform.y or card.velocity.y ~= 0) then
-        card.velocity.x = momentum * card.velocity.x +
-            (1 - momentum) * (card.target_transform.x - card.transform.x) * 30 * dt
-        card.velocity.y = momentum * card.velocity.y +
-            (1 - momentum) * (card.target_transform.y - card.transform.y) * 30 * dt
-        card.transform.x = card.transform.x + card.velocity.x
-        card.transform.y = card.transform.y + card.velocity.y
-
-        local velocity = math.sqrt(card.velocity.x ^ 2 + card.velocity.y ^ 2)
-        if velocity > max_velocity then
-            card.velocity.x = max_velocity * card.velocity.x / velocity
-            card.velocity.y = max_velocity * card.velocity.y / velocity
-        end
-    end
-end
-
-local function resetDeck()
-    showGameButtons = false
-    for _, card in ipairs(cards) do
-        card.is_on_deck = true
-    end
-
-    deck.cards = {}
-    for _, card in ipairs(cards) do
-        table.insert(deck.cards, card)
-    end
-
-    -- Clear all drop zones
-    for _, zone in ipairs(dropZones) do
-        zone.card = nil
-    end
-
-    align(deck)
-end
-
-local function shuffleDeck()
-    resetDeck()
-
-    local bogo = require('utils.sorts').bogoOnce
-    bogo(deck.cards)
-
-    cards = {}
-    for _, card in ipairs(deck.cards) do
-        table.insert(cards, card)
-    end
-
-    align(deck)
-end
-
-local function dealSixCards()
-    local num_to_deal = math.min(6, #deck.cards)
-
-    for i = 1, num_to_deal do
-        local card = table.remove(deck.cards) -- safely remove from the top
-        card.is_on_deck = false
-    end
-
-    local left_x = 50
-    local right_x = screenWidth - 190
-    local start_y = screenHeight / 2 - 100
-    local spacing = 80
-
-    local dealt_cards = {}
-    for _, card in ipairs(cards) do
-        if not card.is_on_deck then
-            table.insert(dealt_cards, card)
-        end
-    end
-
-    for i, card in ipairs(dealt_cards) do
-        card.target_transform.y = start_y + spacing * ((i - 1) % 3)
-        if i <= 3 then
-            card.target_transform.x = left_x
-        else
-            card.target_transform.x = right_x
-        end
-    end
-end
-
-
 function Casino:load()
     love.window.setTitle('Casino')
 
@@ -251,7 +155,7 @@ function Casino:load()
         table.insert(cards, card)
     end
 
-    align(deck)
+    CardUtils.align(deck)
 end
 
 function Casino:update(dt)
@@ -269,7 +173,7 @@ function Casino:update(dt)
             card.target_transform.y = my - (card.drag_offset_y or 0)
         end
 
-        move(card, dt)
+        CardUtils.move(card, dt)
     end
 
     for position, sound in ipairs(sounds) do
@@ -461,18 +365,18 @@ function Casino:mousepressed(x, y)
     local buttonY = dropZones[2].y - 90
 
     if x > centerX - 55 and x < centerX - 25 and y > buttonY - 15 and y < buttonY + 15 then
-        shuffleDeck()
-        dealSixCards()
+        StandardDeck.shuffle(deck, cards, dropZones)
+        StandardDeck.dealSix(deck, cards, screenWidth, screenHeight)
     end
 
     -- Blue reset button (center)
     if x > centerX - 15 and x < centerX + 15 and y > buttonY - 15 and y < buttonY + 15 then
-        resetDeck()
+        StandardDeck.reset(deck, cards, dropZones)
     end
 
     -- Green shuffle button (right)
     if x > centerX + 25 and x < centerX + 55 and y > buttonY - 15 and y < buttonY + 15 then
-        shuffleDeck()
+        StandardDeck.shuffle(deck, cards, dropZones)
     end
 
     -- submit button
@@ -556,6 +460,5 @@ function Casino:evaluateHand(hand)
         print("Game:", game.name, "x" .. game.count)
     end
 end
-
 
 return Casino
