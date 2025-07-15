@@ -24,6 +24,7 @@ function Draws:drawKeyboard()
     love.graphics.printf('P', 280, 322, love.graphics.getWidth(), 'center')
     love.graphics.printf('S', -245, 370, love.graphics.getWidth(), 'center')
     love.graphics.printf('F', -110, 370, love.graphics.getWidth(), 'center')
+    love.graphics.printf('B', -7, 417, love.graphics.getWidth(), 'center')
 end
 
 return Draws

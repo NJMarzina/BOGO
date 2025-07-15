@@ -48,7 +48,7 @@ function launcher.draw()
     love.graphics.draw(turtle, x, y, 0) -- 0 is rotation
     draws:drawKeyboard()
     love.graphics.setColor(1,1,1) -- reset color to white
-    love.graphics.printf('Press P to play Pong\nPress F to flip a Coin\nPress S to sort', 0, love.graphics.getHeight()/2 + 200,
+    love.graphics.printf('Press P to play Pong\nPress F to flip a Coin\nPress B to play BOGO\nPress S to sort\n\n\nduck duck duck goose', 0, love.graphics.getHeight()/2 + 200,
                         love.graphics.getWidth(), 'center')
 end
 
@@ -103,7 +103,7 @@ function love.keypressed(key)
         coinflipGame:load()
     elseif state == 'coinflip' and key == 'f' then -- Reset the coin flip game
         coinflipGame:load()
-    elseif state == 'launcher' and key == 'c' then
+    elseif state == 'launcher' and key == 'b' then
         state = 'casino'
         casino:load()  -- Load the casino game
     elseif state == 'launcher' and key == 'escape' then -- elseif sort here

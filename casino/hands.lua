@@ -72,7 +72,28 @@ function Hands.evaluate(hand)
 
         local d13 = Dice:new(13)
 
-        if isStraight and isFlush then
+        local fibValues = {
+            [1] = true,  -- Ace
+            [2] = true,
+            [3] = true,
+            [5] = true,
+            [8] = true,
+            [13] = true  -- King
+        }
+
+        local isFib = fibValues[v1] and fibValues[v2] and fibValues[v3]
+
+        if isFib and isFlush and isStraight then
+            return "Straight Flush Fib"
+        elseif isFib and isFlush then
+            return "Flush Fib"
+        elseif isFib and isStraight then
+            return "Straight Fib"
+        elseif isFib and isTrips then
+            return "Trips Fib"
+        elseif isFib then
+            return "Fib"
+        elseif isStraight and isFlush then
             return "Straight Flush"
         elseif isTrips then
             return "Trips"
