@@ -166,6 +166,11 @@ local function resetDeck()
         table.insert(deck.cards, card)
     end
 
+    -- Clear all drop zones
+    for _, zone in ipairs(dropZones) do
+        zone.card = nil
+    end
+
     align(deck)
 end
 
