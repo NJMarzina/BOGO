@@ -101,7 +101,7 @@ function StandardDeck.shuffle(deck, cards, dropZones)
     end
 
     for _, card in ipairs(deck.cards) do
-            table.insert(cards, card)
+        table.insert(cards, card)
     end
 
     CardUtils.align(deck)
@@ -111,23 +111,18 @@ end
 
 function StandardDeck.dealSix(deck, cards, screenWidth, screenHeight)
     local num_to_deal = math.min(6, #deck.cards)
+    local dealt_cards = {}
 
     for i = 1, num_to_deal do
         local card = table.remove(deck.cards)
         card.is_on_deck = false
+        table.insert(dealt_cards, card)
     end
 
     local left_x = 50
     local right_x = screenWidth - 190
     local start_y = screenHeight / 2 - 100
     local spacing = 80
-
-    local dealt_cards = {}
-    for _, card in ipairs(cards) do
-        if not card.is_on_deck then
-            table.insert(dealt_cards, card)
-        end
-    end
 
     for i, card in ipairs(dealt_cards) do
         card.target_transform.y = start_y + spacing * ((i - 1) % 3)
@@ -137,6 +132,28 @@ function StandardDeck.dealSix(deck, cards, screenWidth, screenHeight)
             card.target_transform.x = right_x
         end
     end
+
+    return dealt_cards
 end
+
+function StandardDeck.reclaimLooseCards(deck, cards, dropZones)
+    -- Build a set of cards that are already placed in drop zones
+    local placed = {}
+    for _, zone in ipairs(dropZones) do
+        if zone.card then
+            placed[zone.card] = true
+        end
+    end
+
+    -- Clear the deck and rebuild it with all unplaced cards
+    deck.cards = {}
+    for _, card in ipairs(cards) do
+        if not placed[card] then
+            card.is_on_deck = true
+            table.insert(deck.cards, card)
+        end
+    end
+end
+
 
 return StandardDeck

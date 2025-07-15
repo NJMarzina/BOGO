@@ -36,6 +36,8 @@ local deck = {
     }
 }
 
+local dealt_cards = {}
+
 local dropZoneWidth = 140 * 0.85
 local dropZoneHeight = 224 * 0.75  -- shorter
 local dropZoneSpacing = 90         -- more spacing
@@ -324,9 +326,14 @@ function Casino:draw()
         end
     end
 
-    -- Draw all cards
     love.graphics.setColor(1, 1, 1, 1)
-    for _, card in ipairs(cards) do
+
+    for i = #deck.cards, 1, -1 do
+        deck.cards[i]:draw()
+    end
+
+    -- Draw dealt cards
+    for _, card in ipairs(dealt_cards) do
         card:draw()
     end
 
@@ -344,10 +351,9 @@ function Casino:draw()
     end
 end
 
-
 function Casino:mousepressed(x, y)
-    for i = #cards, 1, -1 do
-        local card = cards[i]
+    for i = #dealt_cards, 1, -1 do
+        local card = dealt_cards[i]
         if x > card.transform.x
             and x < card.transform.x + card.transform.width
             and y > card.transform.y
@@ -360,43 +366,52 @@ function Casino:mousepressed(x, y)
         end
     end
 
-    -- Red deal button (left)
     local centerX = dropZones[2].x + dropZones[2].width / 2
     local buttonY = dropZones[2].y - 90
 
+    -- Red deal button (left)
     if x > centerX - 55 and x < centerX - 25 and y > buttonY - 15 and y < buttonY + 15 then
+        StandardDeck.reset(deck, cards, dropZones)
         StandardDeck.shuffle(deck, cards, dropZones)
-        StandardDeck.dealSix(deck, cards, screenWidth, screenHeight)
+        dealt_cards = StandardDeck.dealSix(deck, cards, screenWidth, screenHeight)
     end
 
     -- Blue reset button (center)
     if x > centerX - 15 and x < centerX + 15 and y > buttonY - 15 and y < buttonY + 15 then
         StandardDeck.reset(deck, cards, dropZones)
+        dealt_cards = {}
     end
 
     -- Green shuffle button (right)
     if x > centerX + 25 and x < centerX + 55 and y > buttonY - 15 and y < buttonY + 15 then
+        -- Return dealt cards to deck
+        for _, card in ipairs(dealt_cards) do
+            card.is_on_deck = true
+            table.insert(deck.cards, card)
+        end
+        dealt_cards = {}
+
+        StandardDeck.reclaimLooseCards(deck, cards, dropZones)
         StandardDeck.shuffle(deck, cards, dropZones)
     end
 
     -- submit button
     if Casino.submitButton then
-    local b = Casino.submitButton
-    if x > b.x and x < b.x + b.w and y > b.y and y < b.y + b.h then
-        local hand = {}
-        for _, zone in ipairs(dropZones) do
-            if zone.card then table.insert(hand, zone.card) end
+        local b = Casino.submitButton
+        if x > b.x and x < b.x + b.w and y > b.y and y < b.y + b.h then
+            local hand = {}
+            for _, zone in ipairs(dropZones) do
+                if zone.card then table.insert(hand, zone.card) end
+            end
+            Casino:evaluateHand(hand)
+            showGameButtons = true
         end
-        Casino:evaluateHand(hand)
-        showGameButtons = true
-    end
 
-    -- dynamic buttons for games in drop zones
-    for _, btn in ipairs(dropZoneGameButtons) do
-        if btn and btn:checkClick(x, y) then return end
+        -- dynamic buttons for games in drop zones
+        for _, btn in ipairs(dropZoneGameButtons) do
+            if btn and btn:checkClick(x, y) then return end
+        end
     end
-end
-
 end
 
 function Casino:mousereleased()
