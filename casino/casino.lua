@@ -19,6 +19,9 @@ local gameIcons = {
 }
 local startTime = love.timer.getTime()
 
+local Button = require('utils.Button')
+local dropZoneGameButtons = {nil, nil, nil}
+
 local canvas
 
 -- https://www.shadertoy.com/view/XlfGRj
@@ -192,18 +195,12 @@ local function dealSixCards()
     local num_to_deal = math.min(6, #deck.cards)
 
     for i = 1, num_to_deal do
-        local card = deck.cards[#deck.cards - i + 1]  -- top card
+        local card = table.remove(deck.cards) -- safely remove from the top
         card.is_on_deck = false
-        for j = #deck.cards, 1, -1 do
-            if deck.cards[j] == card then
-                table.remove(deck.cards, j)
-                break
-            end
-        end
     end
 
     local left_x = 50
-    local right_x = screenWidth - 190 -- card width + margin
+    local right_x = screenWidth - 190
     local start_y = screenHeight / 2 - 100
     local spacing = 80
 
@@ -223,6 +220,7 @@ local function dealSixCards()
         end
     end
 end
+
 
 function Casino:load()
     love.window.setTitle('Casino')
@@ -309,7 +307,7 @@ function Casino:draw()
 
     -- Draw control buttons centered above middle drop zone
     local centerX = dropZones[2].x + dropZones[2].width / 2
-    local buttonY = dropZones[2].y - 40
+    local buttonY = dropZones[2].y - 90
 
     -- Red deal button (left)
     love.graphics.setColor(0.9, 0.1, 0.1, 1)
@@ -385,6 +383,25 @@ function Casino:draw()
         end
     end
 
+for i, zone in ipairs(dropZones) do
+    dropZoneGameButtons[i] = nil
+
+    if zone.card then
+        local game = Hands.getGameFromHand({zone.card})[1]
+        if game then
+            local buttonWidth = zone.width * 0.9
+            local buttonHeight = 24
+            local buttonX = zone.x + (zone.width - buttonWidth) / 2
+            local buttonY = zone.y - buttonHeight - 8
+
+            dropZoneGameButtons[i] = Button(game.name, buttonX, buttonY, buttonWidth, buttonHeight, function()
+                print("Launching game:", game.name)
+                -- add rest of the game launching logic here
+            end)
+        end
+    end
+end
+
     -- Draw all cards
     love.graphics.setColor(1, 1, 1, 1)
     for _, card in ipairs(cards) do
@@ -394,6 +411,15 @@ function Casino:draw()
     love.graphics.setCanvas()
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(canvas, 0, 0)
+
+    -- Draw buttons directly above drop zones
+    local mx, my = love.mouse.getPosition()
+    for i, btn in ipairs(dropZoneGameButtons) do
+        if btn then
+            btn:update(mx, my)
+            btn:draw()
+        end
+    end
 end
 
 
@@ -414,7 +440,7 @@ function Casino:mousepressed(x, y)
 
     -- Red deal button (left)
     local centerX = dropZones[2].x + dropZones[2].width / 2
-    local buttonY = dropZones[2].y - 40
+    local buttonY = dropZones[2].y - 90
 
     if x > centerX - 55 and x < centerX - 25 and y > buttonY - 15 and y < buttonY + 15 then
         shuffleDeck()
@@ -440,6 +466,11 @@ function Casino:mousepressed(x, y)
             if zone.card then table.insert(hand, zone.card) end
         end
         Casino:evaluateHand(hand)
+    end
+
+    -- dynamic buttons for games in drop zones
+    for _, btn in ipairs(dropZoneGameButtons) do
+        if btn and btn:checkClick(x, y) then return end
     end
 end
 
