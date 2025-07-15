@@ -87,6 +87,8 @@ local backgroundShader = love.graphics.newShader([[
     }
 ]])
 
+local showGameButtons = false
+
 local deck = {
     cards = {},
     transform = {
@@ -160,6 +162,7 @@ local function move(card, dt)
 end
 
 local function resetDeck()
+    showGameButtons = false
     for _, card in ipairs(cards) do
         card.is_on_deck = true
     end
@@ -383,24 +386,24 @@ function Casino:draw()
         end
     end
 
-for i, zone in ipairs(dropZones) do
-    dropZoneGameButtons[i] = nil
+    for i, zone in ipairs(dropZones) do
+        dropZoneGameButtons[i] = nil
 
-    if zone.card then
-        local game = Hands.getGameFromHand({zone.card})[1]
-        if game then
-            local buttonWidth = zone.width * 0.9
-            local buttonHeight = 24
-            local buttonX = zone.x + (zone.width - buttonWidth) / 2
-            local buttonY = zone.y - buttonHeight - 8
+        if zone.card and showGameButtons then
+            local game = Hands.getGameFromHand({zone.card})[1]
+            if game then
+                local buttonWidth = zone.width * 0.9
+                local buttonHeight = 24
+                local buttonX = zone.x + (zone.width - buttonWidth) / 2
+                local buttonY = zone.y - buttonHeight - 8
 
-            dropZoneGameButtons[i] = Button(game.name, buttonX, buttonY, buttonWidth, buttonHeight, function()
-                print("Launching game:", game.name)
-                -- add rest of the game launching logic here
-            end)
+                dropZoneGameButtons[i] = Button(game.name, buttonX, buttonY, buttonWidth, buttonHeight, function()
+                    print("Launching game:", game.name)
+                    -- add rest of the game launching logic here
+                end)
+            end
         end
     end
-end
 
     -- Draw all cards
     love.graphics.setColor(1, 1, 1, 1)
@@ -466,6 +469,7 @@ function Casino:mousepressed(x, y)
             if zone.card then table.insert(hand, zone.card) end
         end
         Casino:evaluateHand(hand)
+        showGameButtons = true
     end
 
     -- dynamic buttons for games in drop zones
@@ -512,6 +516,7 @@ function Casino:mousereleased()
                 -- If card not placed in zone, reset its target to wherever you want, e.g., deal area or deck
                 -- For simplicity, keep card where it was dropped (no snapping)
                 -- Or add your reposition logic here
+                showGameButtons = false
             end
 
             if card.is_on_deck then
