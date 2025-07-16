@@ -1,5 +1,7 @@
 Casino = {}
 --1
+local GameState = require('utils.GameState')
+
 local Card = require('cards.Card')
 local StandardDeck = require('cards.StandardDeck')
 local Dice = require('casino.dice')
@@ -293,38 +295,37 @@ function Casino:draw()
     end
 
     for i, zone in ipairs(dropZones) do
-        dropZoneGameButtons[i] = nil
+    dropZoneGameButtons[i] = nil
 
-        if zone.card and showGameButtons then
-            local game = Hands.getGameFromHand({zone.card})[1]
-            if game then
-                local buttonWidth = zone.width * 0.9
-                local buttonHeight = 24
-                local buttonX = zone.x + (zone.width - buttonWidth) / 2
-                local buttonY = zone.y - buttonHeight - 8
+    if zone.card and showGameButtons then
+        local game = Hands.getGameFromHand({zone.card})[1]
+        if game then
+            local buttonWidth = zone.width * 0.9
+            local buttonHeight = 24
+            local buttonX = zone.x + (zone.width - buttonWidth) / 2
+            local buttonY = zone.y - buttonHeight - 8
 
-                dropZoneGameButtons[i] = Button(game.name, buttonX, buttonY, buttonWidth, buttonHeight, function()
-                    print("Launching game:", game.name)
-                    -- add rest of the game launching logic here
-                    if game.name == "Dice" then
-                        local newDice = Dice:new(6)
-                        newDice.value = newDice:roll()
-                        print("Dice rolled:", newDice.value)
-                    elseif game.name == "Blackjack" then
-                        print("Dealer BJ u Lose! lol")
-                    elseif game.name == "Coin Flip" then
-                        print("Coin Flip: " .. (math.random() < 0.5 and "Heads" or "Tails"))
-                    elseif game.name == "BOGO" then
-                        print("BOGO activated! Buy one get one free!")
-                    elseif game.name == "Plinko" then
-                        print("Plinko game dubskiii!")
-                    elseif game.name == "Dealer's Choice" then
-                        print("Dealer's Choice selected! Choose your game!")
-                    end
-                end)
-            end
+            dropZoneGameButtons[i] = Button(game.name, buttonX, buttonY, buttonWidth, buttonHeight, function()
+                print("Launching game:", game.name)
+
+                if game.name == "Dice" then
+                    GameState:switch("dice")
+                elseif game.name == "Blackjack" then
+                    GameState:switch("blackjack")
+                elseif game.name == "Coin Flip" then
+                    GameState:switch("coinflip")
+                elseif game.name == "BOGO" then
+                    GameState:switch("bogo")
+                elseif game.name == "Plinko" then
+                    GameState:switch("plinko")
+                elseif game.name == "Dealer's Choice" then
+                    GameState:switch("dealerschoice")
+                end
+            end)
         end
     end
+end
+
 
     love.graphics.setColor(1, 1, 1, 1)
 
