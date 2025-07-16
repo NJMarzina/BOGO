@@ -19,7 +19,12 @@ local dealerHand = {}
 local gamePhase = "player"
 local message = ""
 
+local cardBackImage = love.graphics.newImage("assets/images/blue_deck_back.png")
+
 local cardImages = {}
+
+local time = 0
+local backgroundShader = love.graphics.newShader("assets/shaders/drive_home.frag")
 
 local function createBlackjackDeck()
     local blackjackCards = {}
@@ -118,6 +123,10 @@ function Blackjack:load()
 end
 
 function Blackjack:update(dt)
+    time = time + dt
+    backgroundShader:send("iTime", time)
+    backgroundShader:send("iResolution", {screenWidth, screenHeight})
+
     local mx, my = love.mouse.getPosition()
     backButton:update(mx, my)
     restartButton:update(mx, my)
@@ -151,6 +160,10 @@ function Blackjack:update(dt)
 end
 
 function Blackjack:draw()
+    love.graphics.setShader(backgroundShader)
+    love.graphics.rectangle("fill", 0, 0, screenWidth, screenHeight)
+    love.graphics.setShader()
+
     love.graphics.setFont(blackjackFont)
     love.graphics.setColor(1, 1, 1)
 
@@ -160,15 +173,23 @@ function Blackjack:draw()
     local playerScore = calculateScore(playerHand)
 
     -- Draw dealer score and cards horizontally
-    love.graphics.printf("Dealer's Hand (" .. dealerScore .. "):", 50, 100, screenWidth, "left")
+    local showFullDealerHand = (gamePhase ~= "player")
+    local displayedDealerScore = showFullDealerHand and calculateScore(dealerHand) or "?"
+
+    love.graphics.printf("Dealer's Hand (" .. displayedDealerScore .. "):", 50, 100, screenWidth, "left")
+
     local startX = 50
     local startY = 140
     local cardSpacing = 60
     for i, card in ipairs(dealerHand) do
-        if card.image then
-            love.graphics.draw(card.image, startX + (i-1)*cardSpacing, startY, 0, 0.2, 0.2)
+        if i == 1 or showFullDealerHand then
+            if card.image then
+                love.graphics.draw(card.image, startX + (i-1)*cardSpacing, startY, 0, 0.2, 0.2)
+            else
+                love.graphics.printf(card.name, startX + (i-1)*cardSpacing, startY, 100, "left")
+            end
         else
-            love.graphics.printf(card.name, startX + (i-1)*cardSpacing, startY, 100, "left")
+            love.graphics.draw(cardBackImage, startX + (i-1)*cardSpacing, startY, 0, 0.15, 0.15)
         end
     end
 

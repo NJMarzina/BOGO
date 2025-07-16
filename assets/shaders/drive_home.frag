@@ -373,7 +373,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     
     col += sat(rd.y)*vec3(.6, .5, .9);
     
-	fragColor = vec4(col, 0.);
+	fragColor = vec4(col, 1.0);
 }
 
 vec4 effect(vec4 color, Image tex, vec2 tex_coords, vec2 screen_coords) {
