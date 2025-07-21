@@ -20,6 +20,8 @@ GameState:register("dice", diceGame)
 GameState:register("blackjack", bjGame)
 GameState:register("coin", coinflipGame)
 
+GameState:register("settings", settings)
+
 local x, y, rotation, turtle, background, keyboard
 local speed = 120
 
@@ -70,8 +72,8 @@ function love.update(dt)
         coinflipGame:update(dt)
     elseif state == 'casino' or GameState.current ~= 'launcher' then
         GameState:update(dt)
-    elseif state == 'settings' then
-        settings:update(dt)
+    elseif GameState.current ~= 'launcher' then
+        GameState:update(dt)
     end
     effects.update(dt)
     if Settings.update then Settings:update(dt) end
@@ -86,8 +88,8 @@ function love.draw()
         coinflipGame:draw()
     elseif state == 'casino' or GameState.current ~= 'launcher' then
         GameState:draw()
-    elseif state == 'settings' then
-        settings:draw()
+    elseif GameState.current ~= 'launcher' then
+        GameState:draw()
     end
     effects.draw()
 end
@@ -106,14 +108,12 @@ function love.keypressed(key)
     elseif state == 'launcher' and key == 'b' then
         state = 'casino'
         GameState:switch("casino")
-    elseif state == 'launcher' and key == 'escape' then
-        state = 'settings'
-        settings:load()
-    elseif state == 'settings' and key == 'escape' then
-        returnToLauncher()
     elseif key == 'escape' then
-        state = 'settings'
-        settings:load()
+        if GameState.current == "settings" then
+            returnToLauncher()
+        else
+            GameState:switch("settings")
+        end
     end
 end
 
