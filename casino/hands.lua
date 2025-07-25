@@ -61,14 +61,18 @@ function Hands.evaluate(hand)
     elseif #hand == 2 then
         return (hand[1].value == hand[2].value) and "One Pair" or "No Hand"
     elseif #hand == 3 then
-        table.sort(hand, function(a, b) return a.value < b.value end)
+        --table.sort(hand, function(a, b) return a.value < b.value end)
+        -- this would sort hand, but we wanna keep the original order for game logic
+        -- so we will just check the values directly
+
         local v1, v2, v3 = hand[1].value, hand[2].value, hand[3].value
         local s1, s2, s3 = hand[1].suit, hand[2].suit, hand[3].suit
 
         local isFlush = (s1 == s2) and (s2 == s3)
         local isStraight = isStraight3(v1, v2, v3)
         local isTrips = (v1 == v2 and v2 == v3)
-        local isPair = (v1 == v2 or v2 == v3 or v1 == v3)
+        local isPair = (v1 == v2 or v2 == v3)
+        local isPali = (v1 == v3)
 
         local d13 = Dice:new(13)
 
@@ -101,10 +105,12 @@ function Hands.evaluate(hand)
             return "Flush"
         elseif isStraight then
             return "Straight (" .. d13:roll() .. ")"
+        elseif isPali then
+            return "Palindrome - BANG"
         elseif isPair then
-            return "One Pair"
+            return "Pair - Hand doesn't exist, but palindromes do (reorder)"
         else
-            return "High Card"
+            return "High Card - Invalid Hand"
         end
     end
 end
