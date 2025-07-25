@@ -1,7 +1,6 @@
 -- casino/casino.lua - Main Casino game state (cleaned up)
 Casino = {}
 
-local GameState = require('utils.GameState')
 local CasinoRenderer = require('casino.CasinoRenderer')
 local CasinoInput = require('casino.CasinoInput')
 local CasinoLogic = require('casino.CasinoLogic')
@@ -10,6 +9,7 @@ local CasinoState = require('casino.CasinoState')
 
 function Casino:load()
     love.window.setTitle('Casino')
+    love.window.setMode(1080, 720, {resizable = false, vsync = true})
     
     -- Initialize all subsystems
     CasinoState:init()
@@ -36,6 +36,13 @@ end
 
 function Casino:mousereleased(x, y)
     CasinoInput:mousereleased(x, y)
+end
+
+function Casino:keypressed(key)
+    if key == "escape" then
+        local GameState = require('utils.GameState')
+        GameState:switch("settings")
+    end
 end
 
 function Casino:evaluateHand(hand)

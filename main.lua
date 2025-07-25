@@ -13,13 +13,11 @@ local GameState = require('utils.GameState')
 
 local diceGame = require('games.DiceGame')
 local bjGame = require('games.Blackjack')
---local coinGame = require('games.CoinGame')
 
 GameState:register("casino", casino)
 GameState:register("dice", diceGame)
 GameState:register("blackjack", bjGame)
-GameState:register("coin", coinflipGame)
-
+GameState:register("coinflip", coinflipGame)
 GameState:register("settings", settings)
 
 local x, y, rotation, turtle, background, keyboard
@@ -70,13 +68,11 @@ function love.update(dt)
         pongGame:update(dt)
     elseif state == 'coinflip' then
         coinflipGame:update(dt)
-    elseif state == 'casino' or GameState.current ~= 'launcher' then
-        GameState:update(dt)
-    elseif GameState.current ~= 'launcher' then
+    elseif state == 'casino' then
         GameState:update(dt)
     end
+    
     effects.update(dt)
-    if Settings.update then Settings:update(dt) end
 end
 
 function love.draw()
@@ -86,55 +82,69 @@ function love.draw()
         pongGame:draw()
     elseif state == 'coinflip' then
         coinflipGame:draw()
-    elseif state == 'casino' or GameState.current ~= 'launcher' then
-        GameState:draw()
-    elseif GameState.current ~= 'launcher' then
+    elseif state == 'casino' then
         GameState:draw()
     end
+    
     effects.draw()
 end
 
 function love.keypressed(key)
-    if state == 'launcher' and key == 'p' then
-        state = 'pong'
-        pongGame:load()
-    elseif key == 'q' then
-        returnToLauncher()
-    elseif state == 'launcher' and key == 'f' then
-        state = 'coinflip'
-        coinflipGame:load()
-    elseif state == 'coinflip' and key == 'f' then
-        coinflipGame:load()
-    elseif state == 'launcher' and key == 'b' then
-        state = 'casino'
-        GameState:switch("casino")
-    elseif key == 'escape' then
-        if GameState.current == "settings" then
-            returnToLauncher()
-        else
+    -- Handle launcher keys
+    if state == 'launcher' then
+        if key == 'p' then
+            state = 'pong'
+            pongGame:load()
+        elseif key == 'f' then
+            state = 'coinflip'
+            coinflipGame:load()
+        elseif key == 'b' then
+            state = 'casino'
+            GameState:switch("casino")
+        elseif key == 'escape' then
             GameState:switch("settings")
         end
+    -- Handle other game states
+    elseif state == 'pong' then
+        if key == 'q' or key == 'escape' then
+            returnToLauncher()
+        end
+    elseif state == 'coinflip' then
+        if key == 'f' then
+            coinflipGame:load()
+        elseif key == 'q' or key == 'escape' then
+            returnToLauncher()
+        end
+    elseif state == 'casino' then
+        -- Forward to GameState system
+        GameState:keypressed(key)
+    end
+    
+    -- Global quit key
+    if key == 'q' and state ~= 'casino' then
+        returnToLauncher()
     end
 end
 
 function love.mousepressed(x, y, button)
-    if state == 'settings' and Settings.mousepressed then
-        Settings:mousepressed(x, y, button)
-    elseif GameState.current ~= 'launcher' then
-        GameState:mousepressed(x, y)
+    if state == 'casino' then
+        GameState:mousepressed(x, y, button)
     end
 end
 
 function love.mousereleased(x, y, button)
-    if state == 'settings' and Settings.mousereleased then
-        Settings:mousereleased(x, y, button)
-    elseif GameState.current ~= 'launcher' then
-        GameState:mousereleased(x, y)
+    if state == 'casino' then
+        GameState:mousereleased(x, y, button)
     end
 end
 
 function _G.returnToLauncher()
+    -- Reset casino state when returning to launcher
+    local CasinoState = require('casino.CasinoState')
+    CasinoState:reset()
+    
     state = 'launcher'
-    GameState.current = 'launcher'
+    GameState.current = nil
+    GameState.previousState = nil
     launcher.load()
 end

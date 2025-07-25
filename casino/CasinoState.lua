@@ -171,4 +171,19 @@ function CasinoState:addSound(sound)
     table.insert(self.sounds, sound)
 end
 
+function CasinoState:reset()
+    -- Reset the casino state when returning to launcher
+    self.initialized = false
+    self.time = 0
+    self.showGameButtons = false
+    self.cards = {}
+    self.dealt_cards = {}
+    self.sounds = {}
+    
+    -- Clear drop zones
+    for _, zone in ipairs(self.dropZones or {}) do
+        zone.card = nil
+    end
+end
+
 return CasinoState

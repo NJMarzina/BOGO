@@ -12,6 +12,14 @@ function CasinoInput:init()
     -- Input system is ready
 end
 
+function CasinoInput:keypressed(key)
+    local GameState = require('utils.GameState')
+    
+    if key == "escape" then
+        GameState:switch("settings")
+    end
+end
+
 function CasinoInput:mousepressed(x, y)
     -- Handle card dragging
     self:handleCardDragging(x, y)
